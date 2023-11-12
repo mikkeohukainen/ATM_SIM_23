@@ -1,8 +1,10 @@
-const mysql = require('mysql2');
-const connection = mysql.createPool({
+import mysql from 'mysql2';
+
+const db = mysql.createPool({
   host: 'localhost',
   user: 'bankuser',
   password: 'bankpass',
-  database: 'bankdb'
+  database: 'bankdb',
 });
-module.exports = connection;
+
+export default db;

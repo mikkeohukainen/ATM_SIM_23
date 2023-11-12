@@ -1,33 +1,30 @@
-const express = require('express');
-const router = express.Router();
-const customer = require('../models/customer_model');
+import { Router } from 'express';
+import customer from '../models/customer_model.js';
 
-router.get('/',
-    function (request, response) {
-        customer.getAll(function (err, dbResult) {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(dbResult);
-            }
-        })
-    });
+export const router = Router();
 
-router.get('/:id',
-    function (request, response) {
-        customer.getById(request.params.id, function (err, dbResult) {
-            if (err) {
-                response.json(err);
-            } else {
-                response.json(dbResult[0]);
-            }
-        })
-    });
+router.get('/', function (request, response) {
+  customer.getAll(function (err, dbResult) {
+    if (err) {
+      response.json(err);
+    } else {
+      response.json(dbResult);
+    }
+  });
+});
 
+router.get('/:id', function (request, response) {
+  customer.getById(request.params.id, function (err, dbResult) {
+    if (err) {
+      response.json(err);
+    } else {
+      response.json(dbResult[0]);
+    }
+  });
+});
 
-router.post('/', 
-function(request, response) {
-  customer.add(request.body, function(err, dbResult) {
+router.post('/', function (request, response) {
+  customer.add(request.body, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
@@ -36,10 +33,8 @@ function(request, response) {
   });
 });
 
-
-router.delete('/:id', 
-function(request, response) {
-  customer.delete(request.params.id, function(err, dbResult) {
+router.delete('/:id', function (request, response) {
+  customer.delete(request.params.id, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
@@ -48,10 +43,8 @@ function(request, response) {
   });
 });
 
-
-router.put('/:id', 
-function(request, response) {
-  customer.update(request.params.id, request.body, function(err, dbResult) {
+router.put('/:id', function (request, response) {
+  customer.update(request.params.id, request.body, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
@@ -59,5 +52,3 @@ function(request, response) {
     }
   });
 });
-
-module.exports = router;
