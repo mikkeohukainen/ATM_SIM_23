@@ -1,15 +1,17 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import logger from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { router as accountRouter } from './routes/account.js';
+import { router as customerRouter } from './routes/customer.js';
+import { router as indexRouter } from './routes/index.js';
+import { router as usersRouter } from './routes/users.js';
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-var accountRouter = require('./routes/account');
-var customerRouter = require('./routes/customer');
-
-var app = express();
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -23,4 +25,4 @@ app.use('/users', usersRouter);
 app.use('/account', accountRouter);
 app.use('/customer', customerRouter);
 
-module.exports = app;
+export default app;
