@@ -3,7 +3,7 @@ import customer from '../models/customer_model.js';
 
 export const router = Router();
 
-router.get('/', function (request, response) {
+router.get('/', function (_, response) {
   customer.getAll(function (err, dbResult) {
     if (err) {
       response.json(err);
@@ -24,7 +24,7 @@ router.get('/:id', function (request, response) {
 });
 
 router.post('/', function (request, response) {
-  customer.add(request.body, function (err, dbResult) {
+  customer.add(request.body, function (err) {
     if (err) {
       response.json(err);
     } else {
