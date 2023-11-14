@@ -9,6 +9,8 @@ import { router as customerRouter } from './routes/customer.js';
 import { router as transactionRouter } from './routes/transaction.js';
 import { router as cardRouter } from './routes/card.js';
 
+import { router as withdrawalRouter } from './routes/withdrawal.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -25,5 +27,7 @@ app.use('/customer', customerRouter);
 app.use('/account_access', account_accessRouter);
 app.use('/transaction', transactionRouter);
 app.use('/card', cardRouter);
+
+app.use('/withdrawal', withdrawalRouter);
 
 export default app;
