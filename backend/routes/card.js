@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import customer from '../models/card_model.js';
+import card from '../models/card_model.js';
 
 export const router = Router();
 
 router.get('/', function (request, response) {
-  customer.getAll(function (err, dbResult) {
+  card.getAll(function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
@@ -14,7 +14,7 @@ router.get('/', function (request, response) {
 });
 
 router.get('/:id', function (request, response) {
-  customer.getById(request.params.id, function (err, dbResult) {
+  card.getById(request.params.id, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
@@ -24,7 +24,7 @@ router.get('/:id', function (request, response) {
 });
 
 router.post('/', function (request, response) {
-  customer.add(request.body, function (err, dbResult) {
+  card.add(request.body, function (err) {
     if (err) {
       response.json(err);
     } else {
@@ -34,7 +34,7 @@ router.post('/', function (request, response) {
 });
 
 router.delete('/:id', function (request, response) {
-  customer.delete(request.params.id, function (err, dbResult) {
+  card.delete(request.params.id, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
@@ -44,7 +44,17 @@ router.delete('/:id', function (request, response) {
 });
 
 router.put('/:id', function (request, response) {
-  customer.update(request.params.id, request.body, function (err, dbResult) {
+  card.update(request.params.id, request.body, function (err, dbResult) {
+    if (err) {
+      response.json(err);
+    } else {
+      response.json(dbResult);
+    }
+  });
+});
+
+router.put('/hash/:id', function (request, response) {
+  card.hashPin(request.params.id, request.body, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
