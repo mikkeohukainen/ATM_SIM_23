@@ -13,6 +13,7 @@ import { router as cardRouter } from './routes/card.js';
 
 import { router as withdrawalRouter } from './routes/withdrawal.js';
 import { router as loginRouter } from './routes/login.js';
+import { router as transferRouter } from './routes/transfer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +37,7 @@ app.use('/transaction', transactionRouter);
 app.use('/card', cardRouter);
 
 app.use('/withdrawal', withdrawalRouter);
+app.use('/transfer', transferRouter);
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
