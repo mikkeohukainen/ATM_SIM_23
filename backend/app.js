@@ -1,19 +1,19 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import logger from 'morgan';
 import path from 'path';
-import jwt from 'jsonwebtoken';
 
 import { fileURLToPath } from 'url';
 import { router as accountRouter } from './routes/account.js';
 import { router as account_accessRouter } from './routes/account_access.js';
-import { router as customerRouter } from './routes/customer.js';
-import { router as transactionRouter } from './routes/transaction.js';
+import { router as bitcoinRouter } from './routes/bitcoin.js';
 import { router as cardRouter } from './routes/card.js';
-
-import { router as withdrawalRouter } from './routes/withdrawal.js';
+import { router as customerRouter } from './routes/customer.js';
 import { router as loginRouter } from './routes/login.js';
+import { router as transactionRouter } from './routes/transaction.js';
 import { router as transferRouter } from './routes/transfer.js';
+import { router as withdrawalRouter } from './routes/withdrawal.js';
 
 import { router as transactionsRouter } from './routes/transactions.js';
 
@@ -37,9 +37,9 @@ app.use('/customer', customerRouter);
 app.use('/account_access', account_accessRouter);
 app.use('/transaction', transactionRouter);
 app.use('/card', cardRouter);
-
 app.use('/withdrawal', withdrawalRouter);
 app.use('/transfer', transferRouter);
+app.use('/bitcoin', bitcoinRouter);
 
 app.use('/transactions', transactionsRouter);
 
