@@ -9,11 +9,22 @@ const transaction = {
   },
   add: function (transaction, callback) {
     return db.query(
-      'insert into transaction (amount, transaction_type, transaction_date, transaction_description, idaccount) values(?,?,?,?,?)',
+      'insert into transaction (amount, transaction_type, transaction_date, transaction_description, idaccount) values(?,?,NOW(),?,?)',
       [
         transaction.amount,
         transaction.transaction_type,
-        transaction.transaction_date,
+        transaction.transaction_description,
+        transaction.idaccount,
+      ],
+      callback
+    );
+  },
+  addBitcoin: function (transaction, callback) {
+    return db.query(
+      'insert into transaction (bitcoin_amount, transaction_type, transaction_date, transaction_description, idaccount) values(?,?,NOW(),?,?)',
+      [
+        transaction.bitcoin_amount,
+        transaction.transaction_type,
         transaction.transaction_description,
         transaction.idaccount,
       ],

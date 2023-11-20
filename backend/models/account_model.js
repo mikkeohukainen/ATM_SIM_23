@@ -25,12 +25,13 @@ const account = {
   },
   update: function (id, account, callback) {
     return db.query(
-      'update account set account_type=?, account_name=?, balance=?, credit_limit=?, idcustomer=? where idaccount=?',
+      'update account set account_type=?, account_name=?, balance=?, credit_limit=?, bitcoin_balance=?, idcustomer=? where idaccount=?',
       [
         account.account_type,
         account.account_name,
         account.balance,
         account.credit_limit,
+        account.bitcoin_balance,
         account.idcustomer,
         id,
       ],
