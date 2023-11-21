@@ -58,11 +58,11 @@ const bitcoin = {
           return callback(new Error('Bitcoin account not found'), null);
         }
 
-        if (debitAccount.balance < euros) {
+        if (parseFloat(debitAccount.balance) < euros) {
           return callback(new Error('Insufficient balance'), null);
         }
 
-        const newBalance = parseFloat(debitAccount.balance - euros).toFixed(2);
+        const newBalance = Math.round((parseFloat(debitAccount.balance) - euros) * 100) / 100;
 
         account.update(debitAccount.idaccount, {
           account_type: debitAccount.account_type,
