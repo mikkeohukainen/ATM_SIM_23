@@ -15,7 +15,7 @@ router.get('/', function (request, response) {
 });
 
 router.get('/:id', function (request, response) {
-  account_access.getById(request.params.id, function (err, dbResult) {
+  account_access.getByAccountId(request.params.id, function (err, dbResult) {
     if (err) {
       response.json(err);
     } else {
