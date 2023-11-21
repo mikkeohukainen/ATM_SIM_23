@@ -4,8 +4,8 @@ const account_access = {
   getAll: function (callback) {
     return db.query('select * from account_access', callback);
   },
-  getById: function (id, callback) {
-    return db.query('select * from account_access where idcard_access=?', [id], callback);
+  getByAccountId: function (id, callback) {
+    return db.query('select * from account_access where idaccount=?', [id], callback);
   },
   add: function (account_access, callback) {
     return db.query(
