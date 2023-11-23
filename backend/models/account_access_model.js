@@ -4,8 +4,12 @@ const account_access = {
   getAll: function (callback) {
     return db.query('select * from account_access', callback);
   },
-  getByAccountId: function (id, callback) {
-    return db.query('select * from account_access where idaccount=?', [id], callback);
+  getByCardId: function (id, callback) {
+    return db.query(
+      'select group_concat(idaccount) as accounts from account_access where idcard=?',
+      [id],
+      callback
+    );
   },
   add: function (account_access, callback) {
     return db.query(
