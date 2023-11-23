@@ -7,6 +7,8 @@
 #include <QNetworkAccessManager>
 #include <QJsonDocument>
 
+#include "menu.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -23,6 +25,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    Menu *objMenu;
 
     QNetworkAccessManager *postManager;
     QNetworkReply *reply_login;
@@ -64,6 +67,7 @@ private:
     int state;
 
     void connectLoginBtns();
+    void disconnectLoginBtns();
     void startLogin();
     void reset();
     void setUpMenu();
@@ -75,6 +79,8 @@ private:
     void selectAccount();
     void getAccountType(QString accountID);
     void checkForBitcoin();
+    void clearData();
+    void disconnectNetworks();
 
 private slots:
     void setUpLoginLabels();

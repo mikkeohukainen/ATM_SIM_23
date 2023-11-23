@@ -4,6 +4,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , bitcoinAccount(false)
 {
     ui->setupUi(this);
 
@@ -12,12 +13,22 @@ MainWindow::MainWindow(QWidget *parent)
     setUpLoginLabels();
     connectLoginBtns();
 
+    postManager = new QNetworkAccessManager(this);
+    getCardManager = new QNetworkAccessManager(this);
+    getCustomerManager = new QNetworkAccessManager(this);
+    getAccessManager = new QNetworkAccessManager(this);
     getTypeManager = new QNetworkAccessManager(this);
+    getAccountManager = new QNetworkAccessManager(this);
 }
 
 MainWindow::~MainWindow()
 {
+    postManager->deleteLater();
+    getCardManager->deleteLater();
+    getCustomerManager->deleteLater();
+    getAccessManager->deleteLater();
     getTypeManager->deleteLater();
+    getAccountManager->deleteLater();
 
     delete ui;
 }
@@ -57,6 +68,7 @@ void MainWindow::btnEnterClicked()
             loginTXT = "";
             state = 0;
 
+            disconnect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(loginSlot(QNetworkReply*)));
             startLogin();
         }
     }
@@ -87,8 +99,6 @@ void MainWindow::startLogin()
         QNetworkRequest request((site_url));
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-
-        postManager = new QNetworkAccessManager(this);
         connect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(loginSlot(QNetworkReply*)));
 
         reply_login = postManager->post(request, QJsonDocument(jsonObjLogin).toJson());
@@ -127,7 +137,6 @@ void MainWindow::loginSlot(QNetworkReply *reply)
     }
 
     reply->deleteLater();
-    postManager->deleteLater();
 }
 
 void MainWindow::setUpLoginLabels()
@@ -155,6 +164,8 @@ void MainWindow::setUpLoginLabels()
     ui->txt_right1->setFocus();
 
     disconnect(ui->btn_right3, &QPushButton::clicked, this, &MainWindow::setUpLoginLabels);
+
+    clearData();
 }
 
 void MainWindow::connectLoginBtns()
@@ -191,8 +202,6 @@ void MainWindow::getCardInfo()
     request.setRawHeader(QByteArray("Authorization"),(token));
     //WEBTOKEN LOPPU
 
-    getCardManager = new QNetworkAccessManager(this);
-
     connect(getCardManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCardInfoSlot(QNetworkReply*)));
 
     reply_card = getCardManager->get(request);
@@ -212,7 +221,6 @@ void MainWindow::getCardInfoSlot(QNetworkReply *reply)
     qDebug() << "idcustomer : "+idcustomer;
 
     reply->deleteLater();
-    getCardManager->deleteLater();
 
     getCustomerInfo();
 }
@@ -225,8 +233,6 @@ void MainWindow::getCustomerInfo()
     //WEBTOKEN ALKU
     request.setRawHeader(QByteArray("Authorization"),(token));
     //WEBTOKEN LOPPU
-
-    getCustomerManager = new QNetworkAccessManager(this);
 
     connect(getCustomerManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCustomerInfoSlot(QNetworkReply*)));
 
@@ -246,7 +252,6 @@ void MainWindow::getCustomerInfoSlot(QNetworkReply *reply)
     qDebug() << fname << lname;
 
     reply->deleteLater();
-    getCustomerManager->deleteLater();
 
     getAccessInfo();
 }
@@ -259,8 +264,6 @@ void MainWindow::getAccessInfo()
     //WEBTOKEN ALKU
     request.setRawHeader(QByteArray("Authorization"),(token));
     //WEBTOKEN LOPPU
-
-    getAccessManager = new QNetworkAccessManager(this);
 
     connect(getAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccessInfoSlot(QNetworkReply*)));
 
@@ -280,7 +283,6 @@ void MainWindow::getAccessInfoSlot(QNetworkReply *reply)
     qDebug() << accountIDs;
 
     reply->deleteLater();
-    getAccessManager->deleteLater();
 
     handleDualCard();
 }
@@ -448,8 +450,6 @@ void MainWindow::getAccountInfo()
     request.setRawHeader(QByteArray("Authorization"),(token));
     //WEBTOKEN LOPPU
 
-    getAccountManager = new QNetworkAccessManager(this);
-
     connect(getAccountManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountInfoSlot(QNetworkReply*)));
 
     reply_account = getAccountManager->get(request);
@@ -471,27 +471,79 @@ void MainWindow::getAccountInfoSlot(QNetworkReply *reply)
     qDebug() << balance;
 
     reply->deleteLater();
-    getAccountManager->deleteLater();
 
     setUpMenu();
 }
 
+void MainWindow::clearData()
+{
+    token.clear();
+    bitcoinAccount = false;
+    idcard.clear();
+    PIN.clear();
+    card_type.clear();
+    idcustomer.clear();
+    fname.clear();
+    lname.clear();
+    accountIDs.clear();
+    idaccount.clear();
+    account_type.clear();
+    account_name.clear();
+    balance.clear();
+    account_owner.clear();
+    accountDetails.clear();
+
+    response_data_login.clear();
+    response_data_card.clear();
+    response_data_customer.clear();
+    response_data_access.clear();
+    response_data_account.clear();
+    response_data_type.clear();
+}
+
+void MainWindow::disconnectLoginBtns()
+{
+    ui->btnEnter->disconnect();
+    ui->btn_num0->disconnect();
+    ui->btn_num1->disconnect();
+    ui->btn_num2->disconnect();
+    ui->btn_num3->disconnect();
+    ui->btn_num4->disconnect();
+    ui->btn_num5->disconnect();
+    ui->btn_num6->disconnect();
+    ui->btn_num7->disconnect();
+    ui->btn_num8->disconnect();
+    ui->btn_num9->disconnect();
+
+    ui->btn_left1->disconnect();
+    ui->btn_left2->disconnect();
+    ui->btn_left3->disconnect();
+    ui->btn_right1->disconnect();
+    ui->btn_right2->disconnect();
+    ui->btn_right3->disconnect();
+}
+
+void MainWindow::disconnectNetworks()
+{
+    disconnect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(loginSlot(QNetworkReply*)));
+    disconnect(getCardManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCardInfoSlot(QNetworkReply*)));
+    disconnect(getCustomerManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCustomerInfoSlot(QNetworkReply*)));
+    disconnect(getAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccessInfoSlot(QNetworkReply*)));
+    disconnect(getTypeManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountTypeSlot(QNetworkReply*)));
+    disconnect(getAccountManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountInfoSlot(QNetworkReply*)));
+}
+
 void MainWindow::setUpMenu()
 {
-    ui->label_top->setText(("TILI: "+account_name+"\nSALDO: "+balance).toUpper());
-    ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->label_left2->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->label_left3->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    ui->txt_right2->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    ui->txt_right2->setEchoMode(QLineEdit::Normal);
-    ui->label_right3->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
-    ui->label_left1->setText("KÄTEISNOSTO");
-    ui->label_left2->setText("TILISIIRTO");
-    ui->label_left3->setText("TILITAPAHTUMAT");
-
-    ui->txt_right1->setText("");
-    ui->txt_right2->setText("");
-    ui->label_right3->setText("KIRJAUDU ULOS");
+    disconnectNetworks();
+    objMenu = new Menu(this);
+    objMenu->setAll(idcard, PIN, card_type, idcustomer,
+                    fname, lname, idaccount, account_type,
+                    account_name, balance, token, bitcoinAccount);
+    objMenu->setUpMenuTxt();
+    objMenu->showMaximized();
+    //clearData();
+    setUpLoginLabels();
+    disconnectLoginBtns();
+    connectLoginBtns();
 }
