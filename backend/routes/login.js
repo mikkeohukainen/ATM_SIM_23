@@ -12,7 +12,7 @@ router.post('/', function (request, response) {
     const pin = request.body.pin;
     login.checkPin(idcard, function (dbError, dbResult) {
       if (dbError) {
-        response.json(dbError);
+        response.json(dbError.errno);
       } else {
         if (dbResult.length > 0) {
           bcrypt.compare(pin, dbResult[0].pin, function (err, compareResult) {

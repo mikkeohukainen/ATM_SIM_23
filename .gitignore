@@ -1,5 +1,6 @@
 backend/node_modules/
 bank-automat/build/
+build-*/
 bank-automat/*.user
 .DS_Store
 .env
