@@ -86,6 +86,8 @@ private slots:
     void setUpLoginLabels();
     void number_btn_clicked();
     void btnEnterClicked();
+    void btnCancelClicked();
+    void btnClearClicked();
     void loginSlot(QNetworkReply *reply);
     void getCardInfoSlot(QNetworkReply *reply);
     void getCustomerInfoSlot(QNetworkReply *reply);

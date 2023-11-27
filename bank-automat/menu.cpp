@@ -49,7 +49,7 @@ void Menu::setUpMenuTxt()
     ui->label_right3->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     ui->label_left1->setText("KÄTEISNOSTO");
-        ui->label_left2->setText("TILISIIRTO");
+    ui->label_left2->setText("TILISIIRTO");
     ui->label_left3->setText("TILITAPAHTUMAT");
 
     ui->txt_right1->setText("");
@@ -74,7 +74,9 @@ void Menu::connectMenuBtns()
 
 void Menu::btn_left1_clicked()
 {
-
+    objWithdraw = new Withdraw;
+    objWithdraw->setVars(idaccount, account_type, token);
+    objWithdraw->showMaximized();
 }
 
 void Menu::btn_left2_clicked()

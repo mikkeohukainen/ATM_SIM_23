@@ -8,6 +8,8 @@
 #include <QNetworkAccessManager>
 #include <QJsonDocument>
 
+#include "withdraw.h"
+
 namespace Ui {
 class Menu;
 }
@@ -30,6 +32,7 @@ public:
 
 private:
     Ui::Menu *ui;
+    Withdraw *objWithdraw;
 
     QString idcard, PIN, card_type, idcustomer,
             fname, lname, idaccount, account_type,
