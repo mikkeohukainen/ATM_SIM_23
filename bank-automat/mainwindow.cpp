@@ -74,6 +74,25 @@ void MainWindow::btnEnterClicked()
     }
 }
 
+void MainWindow::btnCancelClicked()
+{
+    setUpLoginLabels();
+}
+
+void MainWindow::btnClearClicked()
+{
+    if(state == 1)
+    {
+        loginTXT.chop(1);
+        ui->txt_right1->setText(loginTXT);
+    }
+    else if(state == 2)
+    {
+        loginTXT.chop(1);
+        ui->txt_right2->setText(loginTXT);
+    }
+}
+
 void MainWindow::startLogin()
 {
     if(ui->txt_right1->text() == "" || ui->txt_right2->text() == "")
@@ -142,6 +161,7 @@ void MainWindow::loginSlot(QNetworkReply *reply)
 void MainWindow::setUpLoginLabels()
 {
     state = 1;
+    loginTXT = "";
 
     ui->label_top->setText("TERVETULOA\n\nKIRJAUDU SISÄÄN");
     ui->label_left3->setText("");
@@ -182,6 +202,8 @@ void MainWindow::connectLoginBtns()
     connect(ui->btn_num9, &QPushButton::clicked, this, &MainWindow::number_btn_clicked);
 
     connect(ui->btnEnter, &QPushButton::clicked, this, &MainWindow::btnEnterClicked);
+    connect(ui->btnCancel, &QPushButton::clicked, this, &MainWindow::btnCancelClicked);
+    connect(ui->btnClear, &QPushButton::clicked, this, &MainWindow::btnClearClicked);
 }
 
 void MainWindow::reset()
@@ -504,6 +526,8 @@ void MainWindow::clearData()
 void MainWindow::disconnectLoginBtns()
 {
     ui->btnEnter->disconnect();
+    ui->btnCancel->disconnect();
+    ui->btnClear->disconnect();
     ui->btn_num0->disconnect();
     ui->btn_num1->disconnect();
     ui->btn_num2->disconnect();
