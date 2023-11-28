@@ -81,7 +81,9 @@ void Menu::btn_left1_clicked()
 
 void Menu::btn_left2_clicked()
 {
-
+    objTransfer = new Transfer;
+    objTransfer->setVars(idaccount, token);
+    objTransfer->showMaximized();
 }
 
 void Menu::btn_left3_clicked()

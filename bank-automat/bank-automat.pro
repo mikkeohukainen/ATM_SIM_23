@@ -14,16 +14,19 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
+    transfer.cpp \
     withdraw.cpp
 
 HEADERS += \
     mainwindow.hpp \
     menu.h \
+    transfer.h \
     withdraw.h
 
 FORMS += \
     mainwindow.ui \
     menu.ui \
+    transfer.ui \
     withdraw.ui
 
 # Default rules for deployment.
