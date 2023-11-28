@@ -11,20 +11,35 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    bill100widget.cpp \
+    bill10widget.cpp \
+    bill20widget.cpp \
+    bill500widget.cpp \
+    bill50widget.cpp \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
     withdraw.cpp
 
 HEADERS += \
+    bill100widget.h \
+    bill10widget.h \
+    bill20widget.h \
+    bill500widget.h \
+    bill50widget.h \
     mainwindow.hpp \
     menu.h \
     withdraw.h
 
 FORMS += \
+    bill100widget.ui \
+    bill20widget.ui \
+    bill500widget.ui \
+    bill50widget.ui \
     mainwindow.ui \
     menu.ui \
-    withdraw.ui
+    withdraw.ui \
+    bill10widget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

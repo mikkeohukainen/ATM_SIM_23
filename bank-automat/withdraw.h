@@ -28,6 +28,12 @@ public:
 private:
     Ui::Withdraw *ui;
 
+    /*Bill10Widget *obj10EUR;
+    Bill20Widget *obj20EUR;
+    Bill50Widget *obj50EUR;
+    Bill100Widget *obj100EUR;
+    Bill500Widget *obj500EUR;*/
+
     QNetworkAccessManager *postManager;
     QNetworkReply *reply;
     QByteArray response_data;
@@ -36,6 +42,9 @@ private:
             amount, amountTxt;
 
     QByteArray token;
+
+    std::map<int, int> bills;
+    std::map<int, int> billWidgetOffsets;
 
     int state;
 
@@ -52,6 +61,7 @@ private:
     void noFunds();
     void takeMoney();
     void continueTakeMoney();
+    std::map<int, int> calculateBills(int wAmount);
 
 private slots:
     void btn_left1_clicked();
