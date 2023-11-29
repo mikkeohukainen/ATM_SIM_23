@@ -25,6 +25,9 @@ public:
                 const QString &newAccountType,
                  const QByteArray &newToken);
 
+signals:
+    void moneyWithdrawn();
+
 private:
     Ui::Withdraw *ui;
 

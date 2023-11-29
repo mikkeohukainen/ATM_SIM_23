@@ -319,6 +319,7 @@ void Withdraw::withdrawMoneySlot(QNetworkReply *reply)
     else if (json_obj["message"].toString() == "Withdrawal successful")
     {
         takeMoney();
+        emit moneyWithdrawn();
     }
 }
 
