@@ -40,6 +40,10 @@ private:
 
     QByteArray token;
 
+    QNetworkAccessManager *getBalanceManager;
+    QNetworkReply *reply_balance;
+    QByteArray response_data_balance;
+
     bool bitcoinAccount;
 
     void connectMenuBtns();
@@ -51,6 +55,8 @@ private slots:
     void btn_right1_clicked();
     void btn_right2_clicked();
     void btn_right3_clicked();
+    void updateBalance();
+    void updateBalanceSlot(QNetworkReply *reply);
 };
 
 #endif // MENU_H
