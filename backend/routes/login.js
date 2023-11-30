@@ -7,34 +7,35 @@ import dotenv from 'dotenv';
 export const router = Router();
 
 router.post('/', function (request, response) {
-  if (request.body.idcard && request.body.pin) {
-    const idcard = request.body.idcard;
-    const pin = request.body.pin;
-    login.checkPin(idcard, function (dbError, dbResult) {
-      if (dbError) {
-        response.json(dbError.errno);
-      } else {
-        if (dbResult.length > 0) {
-          bcrypt.compare(pin, dbResult[0].pin, function (err, compareResult) {
-            if (compareResult) {
-              console.log('success');
-              const token = generateAccessToken({ idcard: idcard });
-              response.send(token);
-            } else {
-              console.log('wrong pin');
-              response.send(false);
-            }
-          });
-        } else {
-          console.log('user does not exists');
-          response.send(false);
-        }
-      }
-    });
-  } else {
+  const idcard = request.body.idcard;
+  const pin = request.body.pin;
+
+  if (!idcard || !pin) {
     console.log('idcard or pin missing');
-    response.send(false);
+    return response.send(false);
   }
+
+  login.getPin(idcard, function (dbError, dbResult) {
+    if (dbError) {
+      console.log(dbError.errno);
+      return response.json(dbError.errno);
+    }
+
+    if (dbResult.length === 0) {
+      console.log('user does not exist');
+      return response.send(false);
+    }
+
+    bcrypt.compare(pin, dbResult[0].pin, function (_, compareResult) {
+      if (!compareResult) {
+        console.log('wrong pin');
+        return response.send(false);
+      }
+      console.log('success');
+      const token = generateAccessToken({ idcard: idcard });
+      response.send(token);
+    });
+  });
 });
 
 function generateAccessToken(idcard) {

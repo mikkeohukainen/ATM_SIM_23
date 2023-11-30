@@ -34,8 +34,8 @@ const bitcoin = {
     const json = await response.json();
     return json.EUR.last;
   },
-  getBalanceByAccountId: async function (idaccount, callback) {
-    getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
+  getBalanceByAccountId: function (idaccount, callback) {
+    getBitcoinAccount(idaccount, function (_, bitcoinAccount) {
       if (!bitcoinAccount) {
         return callback(new Error('Bitcoin account not found'), null);
       }

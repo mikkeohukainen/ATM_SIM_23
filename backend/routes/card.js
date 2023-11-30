@@ -52,13 +52,3 @@ router.put('/:id', function (request, response) {
     }
   });
 });
-
-router.put('/hash/:id', function (request, response) {
-  card.hashPin(request.params.id, request.body, function (err, dbResult) {
-    if (err) {
-      response.json(err);
-    } else {
-      response.json(dbResult);
-    }
-  });
-});

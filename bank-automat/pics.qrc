@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/new/prefix1">
         <file>img/GUI_noBTNS.png</file>
+        <file>img/10euro.jpg</file>
+        <file>img/20euro.jpg</file>
+        <file>img/50euro.jpg</file>
+        <file>img/100euro.jpg</file>
+        <file>img/500euro.jpg</file>
     </qresource>
 </RCC>

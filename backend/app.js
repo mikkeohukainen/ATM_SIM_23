@@ -3,6 +3,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import logger from 'morgan';
 import path from 'path';
+import helmet from 'helmet';
 
 import { fileURLToPath } from 'url';
 import { router as accountRouter } from './routes/account.js';
@@ -22,6 +23,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+app.use(helmet());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

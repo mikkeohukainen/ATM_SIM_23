@@ -1,6 +1,12 @@
 #include "withdraw.h"
 #include "ui_withdraw.h"
 
+#include "bill10widget.h"
+#include "bill20widget.h"
+#include "bill50widget.h"
+#include "bill100widget.h"
+#include "bill500widget.h"
+
 Withdraw::Withdraw(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Withdraw),
@@ -107,7 +113,7 @@ void Withdraw::otherAmount()
     disconnectBtns();
     connectOtherAmntBtns();
 
-    ui->label_top->setText("SYÖTÄ SUMMA\n10 EUR TARKKUUDELLA\nJA PAINA ENTER");
+    ui->label_top->setText("SYÖTÄ SUMMA (MAX 2000 EUR)\n10 EUR TARKKUUDELLA\nJA PAINA ENTER");
 
     ui->label_left2->setText("");
     ui->label_left3->setText("");
@@ -153,7 +159,9 @@ void Withdraw::number_btn_clicked()
 
 void Withdraw::btnEnterClicked()
 {
-    if (amountTxt.toInt() % 10 == 0)
+    if (amountTxt.toInt() % 10 == 0
+        && amountTxt.toInt() <= 2000
+        && amountTxt.toInt() > 0)
     {
         amount = amountTxt;
         confirm();
@@ -311,6 +319,7 @@ void Withdraw::withdrawMoneySlot(QNetworkReply *reply)
     else if (json_obj["message"].toString() == "Withdrawal successful")
     {
         takeMoney();
+        emit moneyWithdrawn();
     }
 }
 
@@ -331,7 +340,25 @@ void Withdraw::takeMoney()
     disconnectBtns();
     ui->label_top->setText("RAHAT TULOSSA...");
 
-    QTimer::singleShot(3000, this, &Withdraw::continueTakeMoney);
+    bills = calculateBills(amount.toInt());
+
+    QTimer::singleShot(2000, this, &Withdraw::continueTakeMoney);
+}
+
+std::map<int, int> Withdraw::calculateBills(int wAmount)
+{
+    std::vector<int> denominations = {500, 100, 50, 20, 10};
+    std::map<int, int> billsNeeded;
+
+    for (int denom : denominations) {
+        int count = wAmount / denom;
+        if (count > 0) {
+            billsNeeded[denom] = count;
+            wAmount -= count * denom;
+        }
+    }
+
+    return billsNeeded;
 }
 
 void Withdraw::continueTakeMoney()
@@ -340,6 +367,56 @@ void Withdraw::continueTakeMoney()
     ui->label_right3->setText("SULJE");
 
     connect(ui->btn_right3, &QPushButton::clicked, this, &Withdraw::btn_right3_clicked);
+
+    billWidgetOffsets.clear();
+
+    for (const auto &pair : bills) {
+        int billType = pair.first;
+        int billCount = pair.second;
+
+        for (int i = 0; i < billCount; ++i) {
+
+            int xOffset = billWidgetOffsets[billType] * 60;
+            int yOffset = billWidgetOffsets[billType] * 60;
+
+            switch (billType) {
+
+            case 10: {
+                Bill10Widget *bill10 = new Bill10Widget(this);
+                bill10->move(740 - xOffset, 450 + yOffset);
+                bill10->show();
+                billWidgetOffsets[billType]++;
+                break;
+                }
+            case 20: {
+                Bill20Widget *bill20 = new Bill20Widget(this);
+                bill20->move(780 - xOffset, 490 + yOffset);
+                bill20->show();
+                billWidgetOffsets[billType]++;
+                break;
+                }
+            case 50: {
+                Bill50Widget *bill50 = new Bill50Widget(this);
+                bill50->move(820 - xOffset, 530 + yOffset);
+                bill50->show();
+                billWidgetOffsets[billType]++;
+                break;
+                }
+            case 100: {
+                Bill100Widget *bill100 = new Bill100Widget(this);
+                bill100->move(860 - xOffset, 570 + yOffset);
+                bill100->show();
+                billWidgetOffsets[billType]++;
+                break;
+                }
+            case 500: {
+                Bill500Widget *bill500 = new Bill500Widget(this);
+                bill500->move(900 - xOffset, 610 + yOffset);
+                bill500->show();
+                billWidgetOffsets[billType]++;
+                break;
+                }
+            }
+        }
+    }
 }
-
-
