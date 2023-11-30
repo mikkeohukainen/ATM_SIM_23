@@ -23,6 +23,9 @@ public:
 
     void setVars(const QString &newSendingAccountId, const QByteArray &newToken);
 
+signals:
+    void updateSenderBalance();
+
 private:
     Ui::Transfer *ui;
     QNetworkAccessManager *networkManager;
@@ -37,7 +40,7 @@ private:
     enum TransferStatus {
         ENTER_ACCOUNT,
         ENTER_AMOUNT,
-        CONFIRM_TRANSFER,
+        WAITING_CONFIRMATION,
         TRANSFER_COMPLETE,
         ERROR
     };
@@ -48,11 +51,11 @@ private:
     void updateLabels();
     void connectBtns();
     void startOver();
-    void formatAmountText(const QString amount);
+    bool isAmountValid(const QString &amount);
+    void formatAmountText(const QString &amount);
 
-    void confirmTransfer();
-    void completeTransfer();
-    void transferFailed(const QString &errorMessage);
+    void startConfirm();
+    void handleError(const QString &errorMessage);
 
 
 private slots:

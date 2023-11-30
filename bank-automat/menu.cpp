@@ -89,6 +89,8 @@ void Menu::btn_left2_clicked()
     objTransfer = new Transfer;
     objTransfer->setVars(idaccount, token);
     objTransfer->showMaximized();
+
+    connect(objTransfer, &Transfer::updateSenderBalance, this, &Menu::updateBalance);
 }
 
 void Menu::btn_left3_clicked()

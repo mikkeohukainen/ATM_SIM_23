@@ -1,35 +1,35 @@
 #include "transfer.h"
 #include "ui_transfer.h"
 
-Transfer::Transfer(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::Transfer),
-
-    status(ENTER_ACCOUNT)
-
+//Konstruktori. Alustaa Transfer-ikkunan ja asettaa alkuasetukset.
+Transfer::Transfer(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::Transfer)
+    , status(ENTER_ACCOUNT)
 {
     ui->setupUi(this);
     ui->mycentralwidget->setStyleSheet("QWidget#mycentralwidget{image: url(:/new/prefix1/img/GUI_noBTNS.png);}");
-    ui->mycentralwidget->setFixedSize(1920, 1009);
+    //    ui->mycentralwidget->setFixedSize(1920, 1080);
     setLabels();
     connectBtns();
     updateLabels();
-    qDebug() << "TRANSFER LUOTU";
-    qDebug() << "LÄHETTÄJÄN TILI: " + sendingAccountId;
-
 }
 
+// Destruktori. Vapauttaa käyttöliittymäresurssit.
 Transfer::~Transfer()
 {
     delete ui;
 }
 
+// Asettaa lähettäjän tilinumeron ja tokenin.
 void Transfer::setVars(const QString &newSendingAccountId, const QByteArray &newToken)
 {
     sendingAccountId = newSendingAccountId;
     token = newToken;
+    qDebug() << "LÄHETTÄJÄN TILI: " + sendingAccountId;
 }
 
+// Asettaa tarvittavat tekstit ja asettelut käyttöliittymään.
 void Transfer::setLabels()
 {
     ui->label_left1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -41,66 +41,58 @@ void Transfer::setLabels()
     ui->label_left1->setText("");
     ui->label_left2->setText("");
     ui->label_left3->setText("");
-
     ui->txt_right1->setText("");
     ui->txt_right2->setText("");
-    ui->label_right3->setText("TAKAISIN");
-
+    ui->label_right3->setText("PÄÄVALIKKO");
 }
 
+// Päivittää käyttöliittymän tekstejä tilan mukaisesti.
 void Transfer::updateLabels()
 {
     switch (status) {
     case ENTER_ACCOUNT:
-      qDebug() << "ENTER_ACCOUNT";
-      ui->label_top->setText("SYÖTÄ SAAJAN TILINUMERO\nJA SIIRRETTÄVÄ SUMMA");
-      ui->label_left1->setText("Saajan tilinumero: ");
-      ui->label_left2->setText("Siirrettävä summa: ");
-      ui->txt_right1->setFocus();
-      break;
+        ui->label_top->setText("SYÖTÄ SAAJAN TILINUMERO\nJA SIIRRETTÄVÄ SUMMA");
+        ui->label_left1->setText("Saajan tilinumero: ");
+        ui->label_left2->setText("Siirrettävä summa: ");
+        ui->txt_right1->setFocus();
+        break;
     case ENTER_AMOUNT:
-      qDebug() << "ENTER_AMOUNT";
-      ui->label_top->setText("SYÖTÄ SAAJAN TILINUMERO\nJA SIIRRETTÄVÄ SUMMA");
-      ui->label_left1->setText("Saajan tilinumero: ");
-      ui->label_left2->setText("Siirrettävä summa: ");
-      ui->txt_right1->setText(receivingAccountId);
-      ui->txt_right2->setFocus();
-      break;
-    case CONFIRM_TRANSFER:
-      qDebug() << "CONFIRM_TRANSFER";
-      ui->label_top->setText("TARKISTA JA VAHVISTA TILISIIRTO");
-      ui->label_left1->setText("Vastaanottajan nimi: ");
-      ui->txt_right1->setText(receiverName.toUpper());
-      ui->label_left2->setText("Siirrettävä summa: ");
-      ui->txt_right2->setText(formattedAmount);
-      ui->label_left3->setText("VAHVISTA");
-      ui->label_right3->setText("PERUUTA");
-      break;
+        ui->label_top->setText("SYÖTÄ SAAJAN TILINUMERO\nJA SIIRRETTÄVÄ SUMMA");
+        ui->label_left1->setText("Saajan tilinumero: ");
+        ui->label_left2->setText("Siirrettävä summa: ");
+        ui->txt_right1->setText(receivingAccountId);
+        ui->txt_right2->setFocus();
+        break;
+    case WAITING_CONFIRMATION:;
+        ui->label_top->setText("TARKISTA JA VAHVISTA TILISIIRTO");
+        ui->label_left1->setText("Vastaanottajan nimi: ");
+        ui->txt_right1->setText(receiverName.toUpper());
+        ui->label_left2->setText("Siirrettävä summa: ");
+        ui->txt_right2->setText(formattedAmount);
+        ui->label_left3->setText("VAHVISTA");
+        ui->label_right3->setText("PERUUTA");
+        break;
     case TRANSFER_COMPLETE:
-      qDebug() << "TRANSFER_COMPLETE";
-      ui->label_top->setText("TILISIIRTO TEHTY\nTAPAHTUMAT TIEDOT:");
-      ui->label_left1->setText("Vastaanottaja: ");
-      ui->txt_right1->setText(receiverName.toUpper());
-      ui->label_left2->setText("Siirretty summa: ");
-      ui->txt_right2->setText(formattedAmount);
-      ui->label_left3->setText("ALOITA ALUSTA");
-      ui->label_right3->setText("PÄÄVALIKKO");
-      break;
+        ui->label_top->setText("TILISIIRTO TEHTY\nTAPAHTUMAT TIEDOT:");
+        ui->label_left1->setText("Vastaanottaja: ");
+        ui->txt_right1->setText(receiverName.toUpper());
+        ui->label_left2->setText("Siirretty summa: ");
+        ui->txt_right2->setText(formattedAmount);
+        ui->label_left3->setText("ALOITA ALUSTA");
+        ui->label_right3->setText("PÄÄVALIKKO");
+        break;
     case ERROR:
-      qDebug() << "--ERROR--";
-      ui->label_left1->setText("");
-      ui->label_left2->setText("");
-      ui->label_left3->setText("ALOITA ALUSTA");
-
-      ui->txt_right1->setText("");
-      ui->txt_right2->setText("");
-      ui->label_right3->setText("PÄÄVALIKKO");
-      break;
-    default:
-      // Käsittely oletustilanteelle tai virhetilanteelle
-      break;
+        ui->label_left1->setText("");
+        ui->label_left2->setText("");
+        ui->label_left3->setText("ALOITA ALUSTA");
+        ui->txt_right1->setText("");
+        ui->txt_right2->setText("");
+        ui->label_right3->setText("PÄÄVALIKKO");
+        break;
     }
 }
+
+// Yhdistää käyttöliittymän napit niiden toimintoihin.
 void Transfer::connectBtns()
 {
     connect(ui->btn_left3, &QPushButton::clicked, this, &Transfer::left3ButtonClicked);
@@ -116,12 +108,12 @@ void Transfer::connectBtns()
     connect(ui->btn_num8, &QPushButton::clicked, this, &Transfer::numberButtonClicked);
     connect(ui->btn_num9, &QPushButton::clicked, this, &Transfer::numberButtonClicked);
     connect(ui->btn_numDOT, &QPushButton::clicked, this, &Transfer::decimalButtonClicked);
-
     connect(ui->btnEnter, &QPushButton::clicked, this, &Transfer::enterButtonClicked);
     connect(ui->btnCancel, &QPushButton::clicked, this, &Transfer::cancelButtonClicked);
     connect(ui->btnClear, &QPushButton::clicked, this, &Transfer::clearButtonClicked);
 }
 
+// Palauttaa tilisiirron alkutilaan.
 void Transfer::startOver()
 {
     qDebug() << "ALOITETAAN ALUSTA";
@@ -132,137 +124,155 @@ void Transfer::startOver()
     updateLabels();
 }
 
-void Transfer::formatAmountText(const QString amount) {
-    formattedAmount = amount; // Kopioi alkuperäinen teksti formattedAmount-muuttujaan
+// Tarkistaa, onko syötetty summa kelvollinen.
+bool Transfer::isAmountValid(const QString &amount)
+{
+    if (amount.isEmpty()) {
+        ui->txt_right2->setText("SUMMA EI VOI OLLA TYHJÄ");
+        return false;
+    } else if (amount.endsWith(".")) {
+        ui->txt_right2->setText("SUMMA EI VOI PÄÄTTYÄ PISTEESEEN");
+        return false;
+    } else if (amount.startsWith("0")) {
+        ui->txt_right2->setText("SUMMA EI VOI ALKAA NOLLALLA");
+        return false;
+    }
+    return true;
+}
 
-    // Tarkista, sisältääkö formattedAmount piste-merkin.
+// Muotoilee syötetyn summan tulostusta varten: Summan perään lisätään
+// kaksi desimaalia ja €-merkki
+void Transfer::formatAmountText(const QString &amount)
+{
+    formattedAmount = amount; // Kopioidaan alkuperäinen teksti formattedAmount-muuttujaan
     if (!formattedAmount.contains(".")) {
-      // Jos ei sisällä, lisää ".00".
-      formattedAmount += ".00 €";
+      formattedAmount += ".00";
     } else {
-      // Jos sisältää piste-merkin, tarkista sen jälkeisten merkkien määrä.
+      // Jos sisältää piste-merkin, tarkistetaan sen jälkeisten merkkien määrä.
+      // Lisätään tarvittaessa "0"
       int decimalCount = formattedAmount.length() - formattedAmount.indexOf('.') - 1;
       if (decimalCount == 1) {
-          // Jos on vain yksi merkki piste-merkin jälkeen, lisää "0".
-          formattedAmount += "0 €";
+          formattedAmount += "0";
       }
     }
+    formattedAmount += " €";
 }
 
-
-//void Transfer::confirmTransfer()
-//{
-//    ui->label_left1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-//    ui->label_left2->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-//    ui->label_top->setText("TARKISTA JA VAHVISTA TILISIIRTO");
-//    ui->label_left1->setText("Saajan nimi: "+receiverName);
-//    ui->label_left2->setText("Siirrettävä summa: "+transferAmount);
-//}
-
-void Transfer::completeTransfer()
+// Aloittaa siirron vahvistusprosessin.
+void Transfer::startConfirm()
 {
+    if (isAmountValid(transferAmount)) {
+      ui->label_top->setText("HAETAAN VASTAANOTTAJAN TIETOJA");
+      qDebug() << "SUMMA : " + transferAmount;
+      formatAmountText(transferAmount);
+      qDebug() << "MUOTOILTU SUMMA : " + formattedAmount;
+      QTimer::singleShot(1000, this, &Transfer::getReceiverInfo);
 
+    }
+    else { // Jos summa ei ole kelvollinen, nollataan transferAmount.
+      ui->txt_right2->setFocus();
+      ui->label_left3->setText("");
+      transferAmount = "";
+      qDebug() << "transferAmount NOLLATTU";
+    }
 }
 
-void Transfer::transferFailed(const QString &errorMessage)
-{   updateLabels();
-    ui->label_top->setText(errorMessage);
+// Käsittelee tilisiirron aikana ilmenevät virheet.
+void Transfer::handleError(const QString &errorMessage)
+{
+    status = ERROR;
+
+    if (errorMessage == "Receiver account not found") {
+      ui->label_top->setText("VIRHE: TILIÄ EI LÖYDY.");
+    } else if (errorMessage == "Insufficient funds") {
+      ui->label_top->setText("VIRHE: TILIN KATE EI RIITÄ.");
+    } else if (errorMessage == "Error connecting to the database") {
+      ui->label_top->setText("VIRHE: EI YHTEYTTÄ TIETOKANTAAN.");
+    } else { // Jos jokin muu virhe, tulostetaan virheviesti sellaisenaan
+      ui->label_top->setText("VIRHE: " + errorMessage + "\n\nTAPAHTUMA PERUUTETTU");
+    }
+    updateLabels();
 }
 
+// Määrittelee vasemman puolen alimman napin toiminnallisuuden.
 void Transfer::left3ButtonClicked()
 {
-    //Vahvista tilisiiro
-    if (status == CONFIRM_TRANSFER) {
+    // Napin teksti: VAHVISTA. Aloittaa tilisiirron suorittamisen.
+    if (status == WAITING_CONFIRMATION) {
       ui->label_top->setText("SUORITETAAN TILISIIRTO");
-      QTimer::singleShot(3000, this, &Transfer::startTransfer);
+      ui->label_left3->setText("");
+      ui->label_left3->setText("");
+      QTimer::singleShot(1500, this, &Transfer::startTransfer);
     }
 
-    //Tee uusi siirto
+    // Napin teksti: ALOITA ALUSTA. Palauttaa tilisiirto-toiminnon alkutilaan.
     else if (status == TRANSFER_COMPLETE || status == ERROR) {
       startOver();
     }
 
-}
-
-//void Transfer::right3ButtonClicked()
-//{
-
-//    if (status == ENTER_ACCOUNT || status == ENTER_AMOUNT) {
-//      this->close();
-//    }
-//    else if (status == TRANSFER_COMPLETE) {
-//      this->close();
-//    }
-//    else if (status == CONFIRM_TRANSFER){
-//      startOver();
-//    }
-//}
-
-
-void Transfer::right3ButtonClicked()
-{
-    if (status == CONFIRM_TRANSFER) startOver();
-    else this->close();
-}
-
-
-void Transfer::enterButtonClicked()
-{
-    switch (status) {
-    case ENTER_ACCOUNT:
-        if (!receivingAccountId.isEmpty()) {
-            status = ENTER_AMOUNT;
-            qDebug() << "TILINUMERO TALLENNETTU";
-            qDebug() << "VASTAANOTTAJAN TILINUMERO: " + receivingAccountId;
-            updateLabels();
-        }
-        break;
-    case ENTER_AMOUNT:
-        if (!transferAmount.isEmpty() && !transferAmount.endsWith(".") && !transferAmount.startsWith("0")) {
-            status = CONFIRM_TRANSFER;
-            qDebug() << "SUMMA TALLENNETTU";
-            qDebug() << "SUMMA : " + transferAmount;
-            formatAmountText(transferAmount);
-            qDebug() << "SUMMASTA TEHTY MUOTOILTU VERSIO";
-            qDebug() << "MUOTOILTU SUMMA : " + formattedAmount;
-            getReceiverInfo();
-            updateLabels();
-        }
-        break;
-    default:
-        // Oletus tai virhetilanne
-        break;
+    // Napin teksti: JATKA. Siirtyy syötettyjen tietojen tarkistukseen
+    else if (status == ENTER_AMOUNT) {
+      startConfirm();
     }
 }
 
+// Määrittelee oikean puolen alimman napin toiminnallisuuden.
+void Transfer::right3ButtonClicked()
+{
+    // Napin teksti: PERUUTA. Palauttaa tilisiirto-toiminnon alkutilaan
+    if (status == WAITING_CONFIRMATION)
+      startOver();
+
+    // Napin teksti: PÄÄVALIKKO. Sulkee Tilisiirto-ikkunan
+    else
+      this->close();
+}
+
+// Määrittelee Enter-napin toiminnallisuuden.
+void Transfer::enterButtonClicked()
+{
+    if (status == ENTER_ACCOUNT && !receivingAccountId.isEmpty()) {
+      status = ENTER_AMOUNT;
+      qDebug() << "TILINUMERO TALLENNETTU";
+      qDebug() << "VASTAANOTTAJAN TILINUMERO: " + receivingAccountId;
+      updateLabels();
+    } else if (status == ENTER_AMOUNT) {
+      startConfirm();
+    }
+}
+
+// Määrittelee Clear-napin toiminnallisuuden.
 void Transfer::clearButtonClicked()
 {
     if (status == ENTER_ACCOUNT) {
-        receivingAccountId = "";
-        ui->txt_right1->setText(receivingAccountId);
-        ui->txt_right1->setFocus();
-        qDebug() << "TILINUMERO PYYHITTY";
-        qDebug() << "VASTAANOTTAJAN TILINUMERO: " + receivingAccountId;
+      receivingAccountId = "";
+      ui->txt_right1->setText(receivingAccountId);
+      ui->txt_right1->setFocus();
+      qDebug() << "TILINUMERO NOLLATTU";
     }
 
     else if (status == ENTER_AMOUNT) {
-        transferAmount = "";
-        ui->txt_right2->setText(transferAmount);
-        ui->txt_right2->setFocus();
-        qDebug() << "SUMMA PYYHITTY";
-        qDebug() << "SIIRTOSUMMA: " +transferAmount;
+      transferAmount = "";
+      ui->txt_right2->setText(transferAmount);
+      ui->txt_right2->setFocus();
+      ui->label_left3->setText("");
+      qDebug() << "SUMMA NOLLATTU";
     }
 }
 
+// Määrittelee Cancel-napin toiminnallisuuden.
 void Transfer::cancelButtonClicked()
 {
     startOver();
 }
 
+// Määrittelee numeronappien toiminnallisuuden.
+// Napin käytössä vain jos tila on ENTER_ACCOUNT tai ENTER_AMOUNT.
 void Transfer::numberButtonClicked()
 {
-    QPushButton * button = qobject_cast<QPushButton*>(sender());
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
     QString name = button->objectName();
+
     if (status == ENTER_ACCOUNT) {
         receivingAccountId += name.right(1);
         ui->txt_right1->setText(receivingAccountId);
@@ -270,24 +280,30 @@ void Transfer::numberButtonClicked()
     }
 
     else if (status == ENTER_AMOUNT) {
+        // Sallitaan summaa syöttäessä vain kaksi desimaalia
         if (transferAmount.contains(".")) {
-            int index = transferAmount.indexOf(".");
-            int decimalCount = transferAmount.length() - (index + 1);
+          int index = transferAmount.indexOf(".");
+          int decimalCount = transferAmount.length() - (index + 1);
 
-            if (decimalCount < 2) { // Salli syöttää enintään kaksi desimaalia
-                transferAmount += name.right(1);
-                ui->txt_right2->setText(transferAmount);
-                ui->txt_right2->setFocus();
-            }
+          if (decimalCount < 2) {
+              transferAmount += name.right(1);
+          }
+        } else {
+          transferAmount += name.right(1);
         }
-        else {
-            transferAmount += name.right(1);
-            ui->txt_right2->setText(transferAmount);
-            ui->txt_right2->setFocus();
+
+        ui->txt_right2->setText(transferAmount);
+        ui->txt_right2->setFocus();
+
+        if (!transferAmount.isEmpty()) {
+          ui->label_left3->setText("JATKA");
+        } else {
+          ui->label_left3->setText("");
         }
     }
 }
 
+// Määrittelee desimaalinapin toiminnallisuuden.
 void Transfer::decimalButtonClicked()
 {
     if (status == ENTER_AMOUNT && !transferAmount.contains(".") && !transferAmount.isEmpty()) {
@@ -297,64 +313,53 @@ void Transfer::decimalButtonClicked()
     }
 }
 
-
-
+// Hakee vastaanottajan tilin tiedot.
 void Transfer::getReceiverInfo()
 {
     qDebug() << "TARKISTETAAN VASTAANOTTAJAN TILI";
-
     QString site_url = "http://localhost:3000/transfer/receiver-info/"+receivingAccountId;
     QNetworkRequest request((site_url));
+
     request.setRawHeader(QByteArray("Authorization"),(token));
     networkManager = new QNetworkAccessManager(this);
+
     connect(networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getReceiverInfoSlot(QNetworkReply*)));
 
     reply = networkManager->get(request);
-
 }
 
+// Käsittelee vastaanottajan tilin tietojen vastaanoton.
 void Transfer::getReceiverInfoSlot(QNetworkReply *reply)
 {
     response_data = reply->readAll();
-    qDebug() << "RECEIVER DATA: "+response_data;
+    qDebug() << "RECEIVER DATA: " + response_data;
 
     QJsonDocument json_doc = QJsonDocument::fromJson(response_data);
     QJsonObject json_obj = json_doc.object();
+
     reply->deleteLater();
+    networkManager->deleteLater();
 
-//    if (json_obj.contains("error")) {
-//        // Aseta tilaksi ERROR ja käsittele virhe
-//        status = ERROR;
-//        QString error_message = json_obj["error"].toString();
-//        qDebug() << "Error: " << error_message;
-//        transferFailed("Virhe: " + error_message);
-//    } else if (json_obj["accountType"].toString() == "bitcoin") {
-//        // Käsittele erityistapaus, esimerkiksi bitcoin-tili
-//        transferFailed("Vastaanottajan tili ei kelpaa.");
-//    } else {
-//        // Jos ei virhettä, jatka normaalisti
-//        receiverName = json_obj["receiverName"].toString();
-//        status = CONFIRM_TRANSFER;
-//        updateLabels();
-//    }
-
-    if (json_obj["error"].toString() == "Receiver account not found") {
-        transferFailed("Tiliä ei löydy.");
-    }
-
-    else if (json_obj["accountType"].toString() == "bitcoin") {
-        transferFailed("Vastaanottajan tili ei kelpaa.");
-    }
-
-    else {
+    if (receivingAccountId == sendingAccountId) {
+        handleError("VASTAANOTTAJAN TILI EI VOI\nOLLA SAMA KUIN LÄHETTÄJÄN");
+    } else if (response_data.length() < 2) {
+        handleError("PALVELIN EI VASTAA");
+    } else if (json_obj.contains("error")) {
+        QString error_message = json_obj["error"].toString();
+        qDebug() << "Error: " << error_message;
+        handleError(error_message);
+    } else if (json_obj["accountType"].toString() == "bitcoin") {
+        handleError("VASTAANOTTAJAN TILI EI VOI OLLA BITCOIN-TILI");
+    } else if (json_obj.contains("receiverName")){
+        // Jos ei virhettä ja receiverName löytyy, otetaan se talteen
         receiverName = json_obj["receiverName"].toString();
-        status = CONFIRM_TRANSFER;
-        qDebug() << "TILI OK";
+        qDebug() <<receiverName;
+        status = WAITING_CONFIRMATION;
         updateLabels();
     }
-
 }
 
+// Aloittaa tilisiirron.
 void Transfer::startTransfer()
 {
     qDebug() << "ALOITETAAN SIIRTO";
@@ -363,13 +368,9 @@ void Transfer::startTransfer()
     jsonObjLogin.insert("receivingAccountId", receivingAccountId);
     jsonObjLogin.insert("amount", transferAmount);
     QString site_url = "http://localhost:3000/transfer";
-
     QNetworkRequest request((site_url));
-
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
     request.setRawHeader(QByteArray("Authorization"), token);
-
     networkManager = new QNetworkAccessManager(this);
 
     connect(networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(transferSlot(QNetworkReply*)));
@@ -377,9 +378,9 @@ void Transfer::startTransfer()
     reply = networkManager->post(request, QJsonDocument(jsonObjLogin).toJson());
 }
 
-void Transfer::transferSlot(QNetworkReply *reply)
-{
-    response_data=reply->readAll();
+// Käsittelee tilisiirron tulokset
+void Transfer::transferSlot(QNetworkReply *reply) {
+    response_data = reply->readAll();
     qDebug() << response_data;
 
     QJsonDocument json_doc = QJsonDocument::fromJson(response_data);
@@ -388,7 +389,16 @@ void Transfer::transferSlot(QNetworkReply *reply)
     reply->deleteLater();
     networkManager->deleteLater();
 
-    status = TRANSFER_COMPLETE;
-    qDebug() << "SIIRTO SUORITETTU";
-    updateLabels();
+    if (json_obj["message"].toString() == "Transfer successful") {
+        status = TRANSFER_COMPLETE;
+        emit updateSenderBalance();
+        qDebug() << "SIIRTO SUORITETTU";
+        updateLabels();
+    } else if (json_obj.contains("error")) {
+        QString error_message = json_obj["error"].toString();
+        qDebug() << "Error: " << error_message;
+        handleError(error_message);
+    } else if (response_data.length() < 2) {
+        handleError("PALVELIN EI VASTAA");
+    }
 }
