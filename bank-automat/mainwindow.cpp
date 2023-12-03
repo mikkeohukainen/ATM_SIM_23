@@ -1,9 +1,11 @@
 #include "mainwindow.hpp"
+#include <QScopedPointer>
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , manager(new QNetworkAccessManager(this))
     , bitcoinAccount(false)
 {
     ui->setupUi(this);
@@ -12,24 +14,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     setUpLoginLabels();
     connectLoginBtns();
-
-    postManager = new QNetworkAccessManager(this);
-    getCardManager = new QNetworkAccessManager(this);
-    getCustomerManager = new QNetworkAccessManager(this);
-    getAccessManager = new QNetworkAccessManager(this);
-    getTypeManager = new QNetworkAccessManager(this);
-    getAccountManager = new QNetworkAccessManager(this);
 }
 
 MainWindow::~MainWindow()
 {
-    postManager->deleteLater();
-    getCardManager->deleteLater();
-    getCustomerManager->deleteLater();
-    getAccessManager->deleteLater();
-    getTypeManager->deleteLater();
-    getAccountManager->deleteLater();
-
+    manager->deleteLater();
     delete ui;
 }
 
@@ -67,8 +56,6 @@ void MainWindow::btnEnterClicked()
         {
             loginTXT = "";
             state = 0;
-
-            disconnect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(loginSlot(QNetworkReply*)));
             startLogin();
         }
     }
@@ -111,51 +98,43 @@ void MainWindow::startLogin()
         qDebug()<<PIN;
 
         QJsonObject jsonObjLogin;
-        jsonObjLogin.insert("idcard",idcard);
-        jsonObjLogin.insert("pin",PIN);
+        jsonObjLogin.insert("idcard", idcard);
+        jsonObjLogin.insert("pin", PIN);
 
-        QString site_url = "http://localhost:3000/login";
-        QNetworkRequest request((site_url));
+        QString url = "http://localhost:3000/login";
+        QNetworkRequest request(url);
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-        connect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(loginSlot(QNetworkReply*)));
-
-        reply_login = postManager->post(request, QJsonDocument(jsonObjLogin).toJson());
+        QNetworkReply *reply = manager->post(request, QJsonDocument(jsonObjLogin).toJson());
+        connect(reply, &QNetworkReply::finished, this, &MainWindow::loginSlot);
     }
 }
 
-void MainWindow::loginSlot(QNetworkReply *reply)
+void MainWindow::loginSlot()
 {
-    response_data_login=reply->readAll();
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray response = reply->readAll();
 
-    qDebug() << response_data_login;
+    qDebug() << response;
 
-    if(response_data_login.length()<2){
+    if (response.length() < 2) {
         qDebug()<<"Palvelin ei vastaa";
         ui->label_top->setText("PALVELIN EI VASTAA");
         reset();
-    }
-    else if(response_data_login == "-4078")
-    {
+    } else if (response == "-4078") {
         qDebug()<<"Virhe tietokantayhteydessä";
         ui->label_top->setText("VIRHE TIETOKANTAYHTEYDESSÄ");
         reset();
-    }
-    else if(response_data_login!="false" && response_data_login.length()>20)
-    {
+    } else if (response != "false" && response.length() > 20) {
         qDebug()<<"Login Ok";
-        token="Bearer "+response_data_login;
+        token = "Bearer " + response;
 
         getCardInfo();
-    }
-    else
-    {
+    } else {
         qDebug()<<"Tunnus ja salasana eivät täsmää";
         ui->label_top->setText("VÄÄRÄ NUMERO TAI PIN KOODI");
         reset();
     }
-
-    reply->deleteLater();
 }
 
 void MainWindow::setUpLoginLabels()
@@ -217,94 +196,76 @@ void MainWindow::reset()
 
 void MainWindow::getCardInfo()
 {
-    QString site_url = "http://localhost:3000/card/"+idcard;
-    QNetworkRequest request((site_url));
-
-    //WEBTOKEN ALKU
-    request.setRawHeader(QByteArray("Authorization"),(token));
-    //WEBTOKEN LOPPU
-
-    connect(getCardManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCardInfoSlot(QNetworkReply*)));
-
-    reply_card = getCardManager->get(request);
+    QString url = "http://localhost:3000/card/" + idcard;
+    QNetworkRequest request((url));
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::getCardInfoSlot);
 }
 
-void MainWindow::getCardInfoSlot(QNetworkReply *reply)
+void MainWindow::getCardInfoSlot()
 {
-    response_data_card = reply->readAll();
-    qDebug() << "DATA : "+response_data_card;
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray response = reply->readAll();
+    qDebug() << "DATA : " + response;
 
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_card);
+    QJsonDocument json_doc = QJsonDocument::fromJson(response);
     QJsonObject json_obj = json_doc.object();
     card_type = json_obj["card_type"].toString();
     idcustomer = QString::number(json_obj["idcustomer"].toInt());
 
-    qDebug() << "card type : "+card_type;
-    qDebug() << "idcustomer : "+idcustomer;
-
-    reply->deleteLater();
+    qDebug() << "card type : " + card_type;
+    qDebug() << "idcustomer : " + idcustomer;
 
     getCustomerInfo();
 }
 
 void MainWindow::getCustomerInfo()
 {
-    QString site_url = "http://localhost:3000/customer/"+idcustomer;
-    QNetworkRequest request((site_url));
-
-    //WEBTOKEN ALKU
-    request.setRawHeader(QByteArray("Authorization"),(token));
-    //WEBTOKEN LOPPU
-
-    connect(getCustomerManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCustomerInfoSlot(QNetworkReply*)));
-
-    reply_customer = getCustomerManager->get(request);
+    QString url = "http://localhost:3000/customer/" + idcustomer;
+    QNetworkRequest request((url));
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::getCustomerInfoSlot);
 }
 
-void MainWindow::getCustomerInfoSlot(QNetworkReply *reply)
+void MainWindow::getCustomerInfoSlot()
 {
-    response_data_customer = reply->readAll();
-    qDebug() << "DATA : "+response_data_customer;
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray response = reply->readAll();
+    qDebug() << "DATA : " + response;
 
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_customer);
+    QJsonDocument json_doc = QJsonDocument::fromJson(response);
     QJsonObject json_obj = json_doc.object();
     fname = json_obj["fname"].toString();
     lname = json_obj["lname"].toString();
 
     qDebug() << fname << lname;
 
-    reply->deleteLater();
-
     getAccessInfo();
 }
 
 void MainWindow::getAccessInfo()
 {
-    QString site_url = "http://localhost:3000/account_access/"+idcard;
-    QNetworkRequest request((site_url));
-
-    //WEBTOKEN ALKU
-    request.setRawHeader(QByteArray("Authorization"),(token));
-    //WEBTOKEN LOPPU
-
-    connect(getAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccessInfoSlot(QNetworkReply*)));
-
-    reply_access = getAccessManager->get(request);
+    QString url = "http://localhost:3000/account_access/" + idcard;
+    QNetworkRequest request((url));
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::getAccessInfoSlot);
 }
 
-void MainWindow::getAccessInfoSlot(QNetworkReply *reply)
+void MainWindow::getAccessInfoSlot()
 {
-    response_data_access = reply->readAll();
-    qDebug() << "DATA : "+response_data_access;
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray response = reply->readAll();
+    qDebug() << "DATA : " + response;
 
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_access);
+    QJsonDocument json_doc = QJsonDocument::fromJson(response);
     QJsonObject json_obj = json_doc.object();
     QString accountsString = json_obj["accounts"].toString();
     accountIDs = accountsString.split(',');
 
     qDebug() << accountIDs;
-
-    reply->deleteLater();
 
     handleDualCard();
 }
@@ -351,30 +312,20 @@ void MainWindow::selectAccount()
 
 void MainWindow::getAccountType(QString accountID)
 {
-    qDebug() << "Entered getAccountType";
-
-    QString site_url = "http://localhost:3000/account/"+accountID;
-    QNetworkRequest request((site_url));
-
-    //WEBTOKEN ALKU
-    request.setRawHeader(QByteArray("Authorization"),(token));
-    //WEBTOKEN LOPPU
-
-    connect(getTypeManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountTypeSlot(QNetworkReply*)));
-
-    reply_type = getTypeManager->get(request);
-
-    qDebug() << "Sending request for account ID:" << accountID;
-
+    QString url = "http://localhost:3000/account/" + accountID;
+    QNetworkRequest request((url));
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::getAccountTypeSlot);
 }
 
-void MainWindow::getAccountTypeSlot(QNetworkReply *reply)
+void MainWindow::getAccountTypeSlot()
 {
     qDebug() << "Entered getAccountTypeSlot";
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray response = reply->readAll();
 
-    response_data_type = reply->readAll();
-
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_type);
+    QJsonDocument json_doc = QJsonDocument::fromJson(response);
     QJsonObject json_obj = json_doc.object();
 
     QString accountId = QString::number(json_obj["idaccount"].toInt());
@@ -384,9 +335,7 @@ void MainWindow::getAccountTypeSlot(QNetworkReply *reply)
 
     qDebug() << accountDetails;
 
-    disconnect(getTypeManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountTypeSlot(QNetworkReply*)));
-
-    reply->deleteLater();
+    disconnect(manager, &QNetworkAccessManager::finished, this, &MainWindow::getAccountTypeSlot);
 
     if (!accountIDs.isEmpty()) {
         getAccountType(accountIDs.takeFirst());
@@ -465,24 +414,20 @@ void MainWindow::checkForBitcoin()
 
 void MainWindow::getAccountInfo()
 {
-    QString site_url = "http://localhost:3000/account/"+idaccount;
-    QNetworkRequest request((site_url));
-
-    //WEBTOKEN ALKU
-    request.setRawHeader(QByteArray("Authorization"),(token));
-    //WEBTOKEN LOPPU
-
-    connect(getAccountManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountInfoSlot(QNetworkReply*)));
-
-    reply_account = getAccountManager->get(request);
+    QString url = "http://localhost:3000/account/" + idaccount;
+    QNetworkRequest request((url));
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::getAccountInfoSlot);
 }
 
-void MainWindow::getAccountInfoSlot(QNetworkReply *reply)
+void MainWindow::getAccountInfoSlot()
 {
-    response_data_account = reply->readAll();
-    qDebug() << "Account data : "+response_data_account;
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray response = reply->readAll();
+    qDebug() << "Account data : " + response;
 
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_account);
+    QJsonDocument json_doc = QJsonDocument::fromJson(response);
     QJsonObject json_obj = json_doc.object();
     account_type = json_obj["account_type"].toString();
     account_name = json_obj["account_name"].toString();
@@ -491,8 +436,6 @@ void MainWindow::getAccountInfoSlot(QNetworkReply *reply)
     qDebug() << account_type;
     qDebug() << account_name;
     qDebug() << balance;
-
-    reply->deleteLater();
 
     setUpMenu();
 }
@@ -514,13 +457,8 @@ void MainWindow::clearData()
     balance.clear();
     account_owner.clear();
     accountDetails.clear();
-
-    response_data_login.clear();
-    response_data_card.clear();
-    response_data_customer.clear();
-    response_data_access.clear();
-    response_data_account.clear();
-    response_data_type.clear();
+    bitcoin_balance.clear();
+    bitcoin_account_name.clear();
 }
 
 void MainWindow::disconnectLoginBtns()
@@ -547,23 +485,23 @@ void MainWindow::disconnectLoginBtns()
     ui->btn_right3->disconnect();
 }
 
-void MainWindow::disconnectNetworks()
-{
-    disconnect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(loginSlot(QNetworkReply*)));
-    disconnect(getCardManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCardInfoSlot(QNetworkReply*)));
-    disconnect(getCustomerManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getCustomerInfoSlot(QNetworkReply*)));
-    disconnect(getAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccessInfoSlot(QNetworkReply*)));
-    disconnect(getTypeManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountTypeSlot(QNetworkReply*)));
-    disconnect(getAccountManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getAccountInfoSlot(QNetworkReply*)));
-}
-
 void MainWindow::setUpMenu()
 {
-    disconnectNetworks();
     objMenu = new Menu(this);
-    objMenu->setAll(idcard, PIN, card_type, idcustomer,
-                    fname, lname, idaccount, account_type,
-                    account_name, balance, token, bitcoinAccount);
+    objMenu->setAll(idcard,
+                    PIN,
+                    card_type,
+                    idcustomer,
+                    fname,
+                    lname,
+                    idaccount,
+                    account_type,
+                    account_name,
+                    balance,
+                    token,
+                    bitcoinAccount,
+                    bitcoin_balance,
+                    bitcoin_account_name);
     objMenu->setUpMenuTxt();
     objMenu->showMaximized();
     //clearData();

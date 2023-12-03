@@ -7,10 +7,11 @@
 #include "bill100widget.h"
 #include "bill500widget.h"
 
-Withdraw::Withdraw(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::Withdraw),
-    state(1)
+Withdraw::Withdraw(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::Withdraw)
+    , manager(new QNetworkAccessManager(this))
+    , state(1)
 {
     ui->setupUi(this);
 
@@ -22,6 +23,7 @@ Withdraw::Withdraw(QWidget *parent) :
 
 Withdraw::~Withdraw()
 {
+    manager->deleteLater();
     delete ui;
 }
 
@@ -262,39 +264,25 @@ void Withdraw::withdrawMoney()
     QJsonObject jsonObjLogin;
     jsonObjLogin.insert("idaccount", idaccount);
     jsonObjLogin.insert("amount", amount);
-    QString site_url;
+    QString url = account_type == "debit" ? "http://localhost:3000/withdrawal/debit"
+                                          : "http://localhost:3000/withdrawal/credit";
 
-    if (account_type == "debit")
-    {
-        site_url = "http://localhost:3000/withdrawal/debit";
-    }
-    else if (account_type == "credit")
-    {
-        site_url = "http://localhost:3000/withdrawal/credit";
-    }
-
-    QNetworkRequest request((site_url));
+    QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
     request.setRawHeader(QByteArray("Authorization"), token);
 
-    postManager = new QNetworkAccessManager(this);
-
-    connect(postManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(withdrawMoneySlot(QNetworkReply*)));
-
-    reply = postManager->post(request, QJsonDocument(jsonObjLogin).toJson());
+    QNetworkReply *reply = manager->post(request, QJsonDocument(jsonObjLogin).toJson());
+    connect(reply, &QNetworkReply::finished, this, &Withdraw::withdrawMoneySlot);
 }
 
-void Withdraw::withdrawMoneySlot(QNetworkReply *reply)
+void Withdraw::withdrawMoneySlot()
 {
-    response_data=reply->readAll();
-    qDebug() << response_data;
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    auto data = reply->readAll();
+    qDebug() << data;
 
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data);
+    QJsonDocument json_doc = QJsonDocument::fromJson(data);
     QJsonObject json_obj = json_doc.object();
-
-    reply->deleteLater();
-    postManager->deleteLater();
 
     if (json_obj["error"].toString() == "Insufficient funds")
     {
@@ -307,17 +295,13 @@ void Withdraw::withdrawMoneySlot(QNetworkReply *reply)
         ui->txt_right1->setText("");
         ui->label_right3->setText("SULJE");
         ui->label_top->setText("VIRHE TIETOKANTAYHTEYDESSÄ");
-    }
-    else if (response_data.length()<2)
-    {
+    } else if (data.length() < 2) {
         disconnectBtns();
         connect(ui->btn_right3, &QPushButton::clicked, this, &Withdraw::btn_right3_clicked);
         ui->txt_right1->setText("");
         ui->label_right3->setText("SULJE");
         ui->label_top->setText("PALVELIN EI VASTAA");
-    }
-    else if (json_obj["message"].toString() == "Withdrawal successful")
-    {
+    } else if (json_obj["message"].toString() == "Withdrawal successful") {
         takeMoney();
         emit moneyWithdrawn();
     }

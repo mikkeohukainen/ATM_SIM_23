@@ -1,9 +1,9 @@
 #include "menu.h"
 #include "ui_menu.h"
 
-Menu::Menu(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::Menu)
+Menu::Menu(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::Menu)
 {
     ui->setupUi(this);
 
@@ -11,20 +11,29 @@ Menu::Menu(QWidget *parent) :
 
     connectMenuBtns();
 
-    getBalanceManager = new QNetworkAccessManager(this);
+    manager = new QNetworkAccessManager(this);
 }
 
 Menu::~Menu()
 {
-    getBalanceManager->deleteLater();
+    manager->deleteLater();
     delete ui;
 }
 
-void Menu::setAll(const QString &newIdcard, const QString &newPIN, const QString &newCardType,
-            const QString &newIdcustomer, const QString &newFname, const QString &newLname,
-            const QString &newIdaccount, const QString &newAccountType,
-            const QString &newAccountName, const QString &newBalance,
-            const QByteArray &newToken, bool newBitcoinAccount)
+void Menu::setAll(const QString &newIdcard,
+                  const QString &newPIN,
+                  const QString &newCardType,
+                  const QString &newIdcustomer,
+                  const QString &newFname,
+                  const QString &newLname,
+                  const QString &newIdaccount,
+                  const QString &newAccountType,
+                  const QString &newAccountName,
+                  const QString &newBalance,
+                  const QByteArray &newToken,
+                  bool newBitcoinAccount,
+                  const QString &newBitcoinBalance,
+                  const QString &newBitcoinAccountName)
 {
     idcard = newIdcard;
     PIN = newPIN;
@@ -38,6 +47,8 @@ void Menu::setAll(const QString &newIdcard, const QString &newPIN, const QString
     balance = newBalance;
     token = newToken;
     bitcoinAccount = newBitcoinAccount;
+    bitcoin_balance = newBitcoinBalance;
+    bitcoin_account_name = newBitcoinAccountName;
 }
 
 void Menu::setUpMenuTxt()
@@ -96,7 +107,11 @@ void Menu::btn_left3_clicked()
 
 void Menu::btn_right1_clicked()
 {
-
+    if (account_type == "debit" && bitcoinAccount) {
+        objBitcoin = new Bitcoin(idaccount, account_name, token, this);
+        objBitcoin->showMaximized();
+        connect(objBitcoin, &Bitcoin::bitcoinsBought, this, &Menu::updateBalance);
+    }
 }
 
 void Menu::btn_right2_clicked()
@@ -112,27 +127,19 @@ void Menu::btn_right3_clicked()
 void Menu::updateBalance()
 {
     QString site_url = "http://localhost:3000/account/"+idaccount;
-    QNetworkRequest request((site_url));
-
-    //WEBTOKEN ALKU
-    request.setRawHeader(QByteArray("Authorization"),(token));
-    //WEBTOKEN LOPPU
-
-    disconnect(getBalanceManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updateBalanceSlot(QNetworkReply*)));
-    connect(getBalanceManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updateBalanceSlot(QNetworkReply*)));
-
-    reply_balance = getBalanceManager->get(request);
+    QNetworkRequest request(site_url);
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &Menu::updateBalanceSlot);
 }
 
-void Menu::updateBalanceSlot(QNetworkReply *reply)
+void Menu::updateBalanceSlot()
 {
-    response_data_balance = reply->readAll();
-
-    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_balance);
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray data = reply->readAll();
+    QJsonDocument json_doc = QJsonDocument::fromJson(data);
     QJsonObject json_obj = json_doc.object();
     balance = json_obj["balance"].toString();
-
-    reply->deleteLater();
 
     ui->label_top->setText(("TILI: "+account_name+"\n\nSALDO: "+balance).toUpper());
 }

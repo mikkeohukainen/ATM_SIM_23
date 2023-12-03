@@ -4,11 +4,6 @@ import transaction from './transaction_model.js';
 
 const BLOCKCHAIN_API_URL = 'https://blockchain.info';
 
-async function eurosToBitcoin(euros) {
-  const response = await fetch(`${BLOCKCHAIN_API_URL}/tobtc?currency=EUR&value=${euros}`);
-  return response.json();
-}
-
 function getBitcoinAccount(idaccount, callback) {
   db.query(
     `SELECT bitcoin_account.*
@@ -29,17 +24,27 @@ function getBitcoinAccount(idaccount, callback) {
 }
 
 const bitcoin = {
+  eurosToBitcoin: async function (euros) {
+    const response = await fetch(`${BLOCKCHAIN_API_URL}/tobtc?currency=EUR&value=${euros}`);
+    return response.text();
+  },
   getLastPrice: async function () {
     const response = await fetch(`${BLOCKCHAIN_API_URL}/ticker`);
     const json = await response.json();
     return json.EUR.last;
   },
-  getBalanceByAccountId: function (idaccount, callback) {
-    getBitcoinAccount(idaccount, function (_, bitcoinAccount) {
+  getBitcoinAccountByDebitAccountId: function (idaccount, callback) {
+    getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
       if (!bitcoinAccount) {
         return callback(new Error('Bitcoin account not found'), null);
       }
-      return callback(null, bitcoinAccount.bitcoin_balance);
+      const lastPrice = await bitcoin.getLastPrice();
+      return callback(null, {
+        bitcoin_balance_eur: (
+          Math.round(parseFloat(bitcoinAccount.bitcoin_balance) * lastPrice * 100) / 100
+        ).toString(),
+        ...bitcoinAccount,
+      });
     });
   },
   buy: async function (idaccount, euros, callback) {
@@ -73,7 +78,7 @@ const bitcoin = {
           idcustomer: debitAccount.idcustomer,
         });
 
-        const bitcoins = await eurosToBitcoin(euros);
+        const bitcoins = parseFloat(await bitcoin.eurosToBitcoin(euros));
         const newBitcoinBalance = parseFloat(bitcoinAccount.bitcoin_balance) + bitcoins;
 
         account.update(bitcoinAccount.idaccount, {
@@ -100,9 +105,8 @@ const bitcoin = {
         });
 
         return callback(null, {
-          euros: euros,
-          balance: newBalance,
-          bitcoin_balance: newBitcoinBalance,
+          new_balance: newBalance.toString(),
+          new_bitcoin_balance: newBitcoinBalance.toFixed(8),
         });
       });
     });
