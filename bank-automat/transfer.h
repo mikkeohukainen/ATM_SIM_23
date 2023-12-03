@@ -24,7 +24,7 @@ public:
     void setVars(const QString &newSendingAccountId, const QByteArray &newToken);
 
 signals:
-    void updateSenderBalance();
+    void updateSenderBalance(); // Päivittää lähettäjän saldon.
 
 private:
     Ui::Transfer *ui;
@@ -37,6 +37,7 @@ private:
 
     QByteArray token;
 
+    // Tilan seuranta
     enum TransferStatus {
         ENTER_ACCOUNT,
         ENTER_AMOUNT,
@@ -44,22 +45,29 @@ private:
         TRANSFER_COMPLETE,
         ERROR
     };
-
     TransferStatus status;
 
-    void setLabels();
-    void updateLabels();
-    void connectBtns();
-    void startOver();
-    bool isAmountValid(const QString &amount);
-    void formatAmountText(const QString &amount);
+    // Verkkopyyntöjen tyypit
+    enum RequestType {
+        NONE,
+        RECEIVER_INFO,
+        TRANSFER
+    };
+    RequestType currentRequestType;
+    bool isRequestPending; // Onko verkkopyyntö meneillään
 
-    void startConfirm();
-    void handleError(const QString &errorMessage);
+    void setLabels(); // Asettaa tarvittavat tekstit ja asettelut käyttöliittymään.
+    void updateLabels(); // Päivittää käyttöliittymän tekstejä tilan mukaisesti.
+    void connectBtns(); // Yhdistää käyttöliittymän napit niiden toimintoihin.
+    void startOver(); // Palauttaa tilisiirron alkutilaan.
+    bool isAmountValid(const QString &amount); // Tarkistaa, onko syötetty summa kelvollinen.
+    void formatAmountText(const QString &amount); // Muotoilee syötetyn summan tulostusta varten.
+
+    void prepareForConfirmation(); // Valmistelee siirron vahvistusprosessin.
+    void handleError(const QString &errorMessage); // Käsittelee tilisiirron aikana ilmenevät virheet.
 
 
 private slots:
-//    void functionButtonClicked();
     void left3ButtonClicked();
     void right3ButtonClicked();
     void enterButtonClicked();
@@ -68,10 +76,13 @@ private slots:
     void numberButtonClicked();
     void decimalButtonClicked();
 
-    void getReceiverInfo();
-    void getReceiverInfoSlot(QNetworkReply *reply);
-    void startTransfer();
-    void transferSlot(QNetworkReply *reply);
+    void networkManagerFinished(QNetworkReply* reply); // Käsittelee valmiin verkkopyynnön.
+
+    void getReceiverInfo(); // Hakee vastaanottajan tilin tiedot.
+    void getReceiverInfoSlot(QNetworkReply *reply); // Käsittelee vastaanottajan tilin tietojen vastaanoton.
+
+    void startTransfer(); // Aloittaa tilisiirron.
+    void transferSlot(QNetworkReply *reply); // Käsittelee tilisiirron tulokset
 };
 
 #endif // TRANSFER_H

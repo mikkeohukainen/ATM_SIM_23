@@ -5,7 +5,11 @@
 Transfer::Transfer(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Transfer)
+    , networkManager(new QNetworkAccessManager(this))
     , status(ENTER_ACCOUNT)
+    , currentRequestType(NONE)
+    , isRequestPending(false)
+
 {
     ui->setupUi(this);
     ui->mycentralwidget->setStyleSheet("QWidget#mycentralwidget{image: url(:/new/prefix1/img/GUI_noBTNS.png);}");
@@ -13,6 +17,10 @@ Transfer::Transfer(QWidget *parent)
     setLabels();
     connectBtns();
     updateLabels();
+
+    // Yhdistetään networkManagerin signaali finished() slotiin networkManagerFinished()
+    connect(networkManager, &QNetworkAccessManager::finished, this, &Transfer::networkManagerFinished);
+    qDebug() << "\n-TRANSFER-OLIO LUOTU-";
 }
 
 // Destruktori. Vapauttaa käyttöliittymäresurssit.
@@ -118,6 +126,8 @@ void Transfer::startOver()
 {
     qDebug() << "ALOITETAAN ALUSTA";
     status = ENTER_ACCOUNT;
+    currentRequestType = NONE;
+    isRequestPending = false;
     receivingAccountId = "";
     transferAmount = "";
     setLabels();
@@ -134,7 +144,7 @@ bool Transfer::isAmountValid(const QString &amount)
         ui->txt_right2->setText("SUMMA EI VOI PÄÄTTYÄ PISTEESEEN");
         return false;
     } else if (amount.startsWith("0")) {
-        ui->txt_right2->setText("SUMMA EI VOI ALKAA NOLLALLA");
+        ui->txt_right2->setText("SUMMAN OLTAVA VÄHINTÄÄN 1€");
         return false;
     }
     return true;
@@ -158,14 +168,17 @@ void Transfer::formatAmountText(const QString &amount)
     formattedAmount += " €";
 }
 
-// Aloittaa siirron vahvistusprosessin.
-void Transfer::startConfirm()
+// Valmistelee siirron vahvistusprosessin.
+void Transfer::prepareForConfirmation()
 {
     if (isAmountValid(transferAmount)) {
       ui->label_top->setText("HAETAAN VASTAANOTTAJAN TIETOJA");
       qDebug() << "SUMMA : " + transferAmount;
       formatAmountText(transferAmount);
       qDebug() << "MUOTOILTU SUMMA : " + formattedAmount;
+
+      // Asetetaan yhden sekunnin viive ennen vastaanottajan tietojen hakua,
+      // jotta käyttäjä ehtii nähdä informaatioviestin.
       QTimer::singleShot(1000, this, &Transfer::getReceiverInfo);
 
     }
@@ -173,7 +186,7 @@ void Transfer::startConfirm()
       ui->txt_right2->setFocus();
       ui->label_left3->setText("");
       transferAmount = "";
-      qDebug() << "transferAmount NOLLATTU";
+      qDebug() << "SUMMA EI KELVOLLINEN, transferAmount NOLLATTU";
     }
 }
 
@@ -183,11 +196,11 @@ void Transfer::handleError(const QString &errorMessage)
     status = ERROR;
 
     if (errorMessage == "Receiver account not found") {
-      ui->label_top->setText("VIRHE: TILIÄ EI LÖYDY.");
+      ui->label_top->setText("TILIÄ EI LÖYDY");
     } else if (errorMessage == "Insufficient funds") {
-      ui->label_top->setText("VIRHE: TILIN KATE EI RIITÄ.");
+      ui->label_top->setText("TILIN KATE EI RIITÄ");
     } else if (errorMessage == "Error connecting to the database") {
-      ui->label_top->setText("VIRHE: EI YHTEYTTÄ TIETOKANTAAN.");
+      ui->label_top->setText("EI YHTEYTTÄ TIETOKANTAAN.");
     } else { // Jos jokin muu virhe, tulostetaan virheviesti sellaisenaan
       ui->label_top->setText("VIRHE: " + errorMessage + "\n\nTAPAHTUMA PERUUTETTU");
     }
@@ -197,22 +210,25 @@ void Transfer::handleError(const QString &errorMessage)
 // Määrittelee vasemman puolen alimman napin toiminnallisuuden.
 void Transfer::left3ButtonClicked()
 {
-    // Napin teksti: VAHVISTA. Aloittaa tilisiirron suorittamisen.
-    if (status == WAITING_CONFIRMATION) {
+    // Napin teksti: JATKA. Siirtyy syötettyjen tietojen tarkistukseen jos vanha verkkopyyntö ei ole voimassa.
+    if (status == ENTER_AMOUNT && !isRequestPending) {
+      prepareForConfirmation();
+    }
+
+    // Napin teksti: VAHVISTA. Aloittaa tilisiirron suorittamisen jos vanha verkkopyyntö ei ole voimassa.
+    else if (status == WAITING_CONFIRMATION && !isRequestPending) {
       ui->label_top->setText("SUORITETAAN TILISIIRTO");
       ui->label_left3->setText("");
       ui->label_left3->setText("");
-      QTimer::singleShot(1500, this, &Transfer::startTransfer);
+
+      // Asetetaan yhden sekunnin viive ennen tilisiirron aloittamista,
+      // jotta käyttäjä ehtii nähdä informaatioviestin.
+      QTimer::singleShot(1000, this, &Transfer::startTransfer);
     }
 
     // Napin teksti: ALOITA ALUSTA. Palauttaa tilisiirto-toiminnon alkutilaan.
     else if (status == TRANSFER_COMPLETE || status == ERROR) {
       startOver();
-    }
-
-    // Napin teksti: JATKA. Siirtyy syötettyjen tietojen tarkistukseen
-    else if (status == ENTER_AMOUNT) {
-      startConfirm();
     }
 }
 
@@ -233,11 +249,8 @@ void Transfer::enterButtonClicked()
 {
     if (status == ENTER_ACCOUNT && !receivingAccountId.isEmpty()) {
       status = ENTER_AMOUNT;
-      qDebug() << "TILINUMERO TALLENNETTU";
-      qDebug() << "VASTAANOTTAJAN TILINUMERO: " + receivingAccountId;
+      qDebug() << " VASTAANOTTAJAN TILINUMERO TALLENNETTU: " + receivingAccountId;
       updateLabels();
-    } else if (status == ENTER_AMOUNT) {
-      startConfirm();
     }
 }
 
@@ -248,7 +261,7 @@ void Transfer::clearButtonClicked()
       receivingAccountId = "";
       ui->txt_right1->setText(receivingAccountId);
       ui->txt_right1->setFocus();
-      qDebug() << "TILINUMERO NOLLATTU";
+      qDebug() << "PAINETTU 'CLEAR', TILINUMERO NOLLATTU";
     }
 
     else if (status == ENTER_AMOUNT) {
@@ -256,7 +269,7 @@ void Transfer::clearButtonClicked()
       ui->txt_right2->setText(transferAmount);
       ui->txt_right2->setFocus();
       ui->label_left3->setText("");
-      qDebug() << "SUMMA NOLLATTU";
+      qDebug() << "PAINETTU 'CLEAR', SUMMA NOLLATTU";
     }
 }
 
@@ -267,7 +280,7 @@ void Transfer::cancelButtonClicked()
 }
 
 // Määrittelee numeronappien toiminnallisuuden.
-// Napin käytössä vain jos tila on ENTER_ACCOUNT tai ENTER_AMOUNT.
+// Napit käytössä vain jos tila on ENTER_ACCOUNT tai ENTER_AMOUNT.
 void Transfer::numberButtonClicked()
 {
     QPushButton *button = qobject_cast<QPushButton *>(sender());
@@ -313,32 +326,47 @@ void Transfer::decimalButtonClicked()
     }
 }
 
+// Käsittelee valmiin verkkopyynnön.
+void Transfer::networkManagerFinished(QNetworkReply *reply)
+{
+    // Tarkistetaan, minkä tyyppinen pyyntö on valmistunut ja jatketaan sitä vastaavaan funktioon
+    if (currentRequestType == RECEIVER_INFO) {
+        qDebug() << "RECEIVER_INFO-PYYNTÖ VALMIS";
+        getReceiverInfoSlot(reply);
+    } else if (currentRequestType == TRANSFER) {
+        qDebug() << "TRANSFER-PYYNTÖ VALMIS";
+        transferSlot(reply);
+    }
+    // Nollataan pyyntötila
+    currentRequestType = NONE;
+    isRequestPending = false;
+}
+
 // Hakee vastaanottajan tilin tiedot.
 void Transfer::getReceiverInfo()
 {
-    qDebug() << "TARKISTETAAN VASTAANOTTAJAN TILI";
+    isRequestPending = true; // Astetaan pyyntö odottavaksi, jotta ei voida tehdä uutta pyyntöä ennen kuin tämä on valmis
+    currentRequestType = RECEIVER_INFO;
+    qDebug() << "ALOITETAAN VASTAANOTTAJAN TIETOJEN HAKU";
     QString site_url = "http://localhost:3000/transfer/receiver-info/"+receivingAccountId;
     QNetworkRequest request((site_url));
 
     request.setRawHeader(QByteArray("Authorization"),(token));
-    networkManager = new QNetworkAccessManager(this);
-
-    connect(networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getReceiverInfoSlot(QNetworkReply*)));
 
     reply = networkManager->get(request);
+    qDebug("RECEIVER_INFO-PYYNTÖ LÄHETETTY");
 }
 
 // Käsittelee vastaanottajan tilin tietojen vastaanoton.
 void Transfer::getReceiverInfoSlot(QNetworkReply *reply)
 {
     response_data = reply->readAll();
-    qDebug() << "RECEIVER DATA: " + response_data;
+    qDebug() << "RECEIVER_INFO DATA: " + response_data;
 
     QJsonDocument json_doc = QJsonDocument::fromJson(response_data);
     QJsonObject json_obj = json_doc.object();
 
     reply->deleteLater();
-    networkManager->deleteLater();
 
     if (receivingAccountId == sendingAccountId) {
         handleError("VASTAANOTTAJAN TILI EI VOI\nOLLA SAMA KUIN LÄHETTÄJÄN");
@@ -353,7 +381,7 @@ void Transfer::getReceiverInfoSlot(QNetworkReply *reply)
     } else if (json_obj.contains("receiverName")){
         // Jos ei virhettä ja receiverName löytyy, otetaan se talteen
         receiverName = json_obj["receiverName"].toString();
-        qDebug() <<receiverName;
+        qDebug() << "VASTAANOTTAJAN NIMI TALLENNETTU: " + receiverName;
         status = WAITING_CONFIRMATION;
         updateLabels();
     }
@@ -362,7 +390,9 @@ void Transfer::getReceiverInfoSlot(QNetworkReply *reply)
 // Aloittaa tilisiirron.
 void Transfer::startTransfer()
 {
-    qDebug() << "ALOITETAAN SIIRTO";
+    isRequestPending = true; // Astetaan pyyntö odottavaksi, jotta ei voida tehdä uutta pyyntöä ennen kuin tämä on valmis
+    currentRequestType = TRANSFER;
+    qDebug() << "ALOITETAAN TILISIIRTO";
     QJsonObject jsonObjLogin;
     jsonObjLogin.insert("sendingAccountId", sendingAccountId);
     jsonObjLogin.insert("receivingAccountId", receivingAccountId);
@@ -371,23 +401,20 @@ void Transfer::startTransfer()
     QNetworkRequest request((site_url));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader(QByteArray("Authorization"), token);
-    networkManager = new QNetworkAccessManager(this);
-
-    connect(networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(transferSlot(QNetworkReply*)));
 
     reply = networkManager->post(request, QJsonDocument(jsonObjLogin).toJson());
+    qDebug("TRANSFER-PYYNTÖ LÄHETETTY");
 }
 
 // Käsittelee tilisiirron tulokset
 void Transfer::transferSlot(QNetworkReply *reply) {
     response_data = reply->readAll();
-    qDebug() << response_data;
+    qDebug() << "TRANSFER DATA: " + response_data;
 
     QJsonDocument json_doc = QJsonDocument::fromJson(response_data);
     QJsonObject json_obj = json_doc.object();
 
     reply->deleteLater();
-    networkManager->deleteLater();
 
     if (json_obj["message"].toString() == "Transfer successful") {
         status = TRANSFER_COMPLETE;
