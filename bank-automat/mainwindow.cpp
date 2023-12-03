@@ -22,6 +22,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::thisClose()
+{
+    this->close();
+}
+
 void MainWindow::number_btn_clicked()
 {
     if (state != 0)
@@ -144,7 +149,7 @@ void MainWindow::setUpLoginLabels()
 
     ui->label_top->setText("TERVETULOA\n\nKIRJAUDU SISÄÄN");
     ui->label_left3->setText("");
-    ui->label_right3->setText("");
+    ui->label_right3->setText("SULJE");
     ui->txt_right1->setText("");
     ui->txt_right2->setText("");
 
@@ -183,6 +188,8 @@ void MainWindow::connectLoginBtns()
     connect(ui->btnEnter, &QPushButton::clicked, this, &MainWindow::btnEnterClicked);
     connect(ui->btnCancel, &QPushButton::clicked, this, &MainWindow::btnCancelClicked);
     connect(ui->btnClear, &QPushButton::clicked, this, &MainWindow::btnClearClicked);
+
+    connect(ui->btn_right3, &QPushButton::clicked, this, &MainWindow::thisClose);
 }
 
 void MainWindow::reset()
@@ -503,7 +510,7 @@ void MainWindow::setUpMenu()
                     bitcoin_balance,
                     bitcoin_account_name);
     objMenu->setUpMenuTxt();
-    objMenu->showMaximized();
+    objMenu->showFullScreen();
     //clearData();
     setUpLoginLabels();
     disconnectLoginBtns();
