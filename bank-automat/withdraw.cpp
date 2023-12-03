@@ -152,7 +152,7 @@ void Withdraw::number_btn_clicked()
     QPushButton * button = qobject_cast<QPushButton*>(sender());
     QString name = button->objectName();
 
-    amountTxt += name.rightRef(1);
+    amountTxt += name.right(1);
 
     ui->txt_right1->setText(amountTxt);
 }

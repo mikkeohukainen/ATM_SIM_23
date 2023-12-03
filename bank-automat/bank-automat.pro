@@ -19,6 +19,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
+    transfer.cpp \
     withdraw.cpp
 
 HEADERS += \
@@ -29,6 +30,7 @@ HEADERS += \
     bill50widget.h \
     mainwindow.hpp \
     menu.h \
+    transfer.h \
     withdraw.h
 
 FORMS += \
@@ -39,8 +41,9 @@ FORMS += \
     mainwindow.ui \
     menu.ui \
     withdraw.ui \
-    bill10widget.ui
-
+    bill10widget.ui \
+    transfer.ui
+    
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
