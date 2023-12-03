@@ -79,7 +79,7 @@ void Menu::btn_left1_clicked()
 {
     objWithdraw = new Withdraw;
     objWithdraw->setVars(idaccount, account_type, token);
-    objWithdraw->showMaximized();
+    objWithdraw->showFullScreen();
 
     connect(objWithdraw, &Withdraw::moneyWithdrawn, this, &Menu::updateBalance);
 }
@@ -88,7 +88,7 @@ void Menu::btn_left2_clicked()
 {
     objTransfer = new Transfer;
     objTransfer->setVars(idaccount, token);
-    objTransfer->showMaximized();
+    objTransfer->showFullScreen();
 
     connect(objTransfer, &Transfer::updateSenderBalance, this, &Menu::updateBalance);
 }

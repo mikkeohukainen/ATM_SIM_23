@@ -83,6 +83,7 @@ private:
     void disconnectNetworks();
 
 private slots:
+    void thisClose();
     void setUpLoginLabels();
     void number_btn_clicked();
     void btnEnterClicked();
