@@ -13,3 +13,15 @@ router.post('/', function (request, response) {
     }
   });
 });
+
+router.get('/receiver-info/:id', function (request, response) {
+  const receivingAccountId = request.params.id;
+
+  transfer.getReceiverInfo(receivingAccountId, function (err, receiverInfo) {
+    if (err) {
+      response.status(500).json({ error: err.message });
+    } else {
+      response.json({ receiverName: receiverInfo.name, accountType: receiverInfo.type });
+    }
+  });
+});

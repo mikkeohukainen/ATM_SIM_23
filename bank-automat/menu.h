@@ -10,6 +10,7 @@
 
 #include "bitcoin.h"
 #include "withdraw.h"
+#include "transfer.h"
 
 namespace Ui {
 class Menu;
@@ -44,6 +45,7 @@ private:
     Ui::Menu *ui;
     Withdraw *objWithdraw;
     Bitcoin *objBitcoin;
+    Transfer *objTransfer;
 
     QString idcard, PIN, card_type, idcustomer, fname, lname, idaccount, account_type, account_name,
         balance, bitcoin_balance, bitcoin_account_name;

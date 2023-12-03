@@ -29,7 +29,7 @@ void MainWindow::number_btn_clicked()
         QPushButton * button = qobject_cast<QPushButton*>(sender());
         QString name = button->objectName();
 
-        loginTXT += name.rightRef(1);
+        loginTXT += name.right(1);
 
         if (state == 1)
         {
