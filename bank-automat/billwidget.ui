@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Bill500Widget</class>
- <widget class="QWidget" name="Bill500Widget">
+ <class>BillWidget</class>
+ <widget class="QWidget" name="BillWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

@@ -1,4 +1,5 @@
 #include "withdraw.h"
+#include "billwidget.h"
 #include "ui_withdraw.h"
 
 #include "bill10widget.h"
@@ -366,37 +367,42 @@ void Withdraw::continueTakeMoney()
             switch (billType) {
 
             case 10: {
-                Bill10Widget *bill10 = new Bill10Widget(this);
-                bill10->move(740 - xOffset, 450 + yOffset);
-                bill10->show();
+                BillWidget *bill = new BillWidget(this,
+                                                  "10euro.jpg",
+                                                  QPoint(740 - xOffset, 450 + yOffset));
+                bill->show();
                 billWidgetOffsets[billType]++;
                 break;
                 }
             case 20: {
-                Bill20Widget *bill20 = new Bill20Widget(this);
-                bill20->move(780 - xOffset, 490 + yOffset);
-                bill20->show();
+                BillWidget *bill = new BillWidget(this,
+                                                  "20euro.jpg",
+                                                  QPoint(780 - xOffset, 490 + yOffset));
+                bill->show();
                 billWidgetOffsets[billType]++;
                 break;
                 }
             case 50: {
-                Bill50Widget *bill50 = new Bill50Widget(this);
-                bill50->move(820 - xOffset, 530 + yOffset);
-                bill50->show();
+                BillWidget *bill = new BillWidget(this,
+                                                  "50euro.jpg",
+                                                  QPoint(820 - xOffset, 530 + yOffset));
+                bill->show();
                 billWidgetOffsets[billType]++;
                 break;
                 }
             case 100: {
-                Bill100Widget *bill100 = new Bill100Widget(this);
-                bill100->move(860 - xOffset, 570 + yOffset);
-                bill100->show();
+                BillWidget *bill = new BillWidget(this,
+                                                  "100euro.jpg",
+                                                  QPoint(860 - xOffset, 570 + yOffset));
+                bill->show();
                 billWidgetOffsets[billType]++;
                 break;
                 }
             case 500: {
-                Bill500Widget *bill500 = new Bill500Widget(this);
-                bill500->move(900 - xOffset, 610 + yOffset);
-                bill500->show();
+                BillWidget *bill = new BillWidget(this,
+                                                  "500euro.jpg",
+                                                  QPoint(900 - xOffset, 610 + yOffset));
+                bill->show();
                 billWidgetOffsets[billType]++;
                 break;
                 }
