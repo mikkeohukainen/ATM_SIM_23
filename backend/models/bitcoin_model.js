@@ -8,14 +8,12 @@ const bitcoin = {
   getBitcoinAccount: function (idaccount, callback) {
     db.query(
       `SELECT bitcoin_account.*
-    FROM account AS debit_account
-    INNER JOIN account AS bitcoin_account ON debit_account.idcustomer = bitcoin_account.idcustomer
-    INNER JOIN account_access ON bitcoin_account.idaccount = account_access.idaccount
-    INNER JOIN card ON account_access.idcard = card.idcard
-    WHERE debit_account.idaccount = ?
-        AND debit_account.account_type = 'debit'
-        AND bitcoin_account.account_type = 'bitcoin'
-        AND debit_account.idcustomer = bitcoin_account.idcustomer`,
+      FROM account AS bitcoin_account
+      WHERE bitcoin_account.account_type = 'bitcoin'
+      AND bitcoin_account.idcustomer IN (SELECT debit_account.idcustomer
+                                        FROM account AS debit_account
+                                        WHERE debit_account.idaccount = ?
+                                        AND debit_account.account_type = 'debit');`,
       [idaccount],
       (err, results) => {
         if (err) callback(err, null);
@@ -112,8 +110,8 @@ const bitcoin = {
   },
   getLastFiveTransactions: function (idaccount, callback) {
     bitcoin.getBitcoinAccount(idaccount, function (_, bitcoinAccount) {
-      const query = `SELECT * FROM transaction WHERE idaccount IN (?, ?) AND bitcoin_amount IS NOT NULL ORDER BY transaction_date DESC LIMIT 5`;
-      db.query(query, [idaccount, bitcoinAccount.idaccount], callback);
+      const query = `SELECT * FROM transaction WHERE idaccount = ? AND bitcoin_amount IS NOT NULL ORDER BY transaction_date DESC LIMIT 5`;
+      db.query(query, [bitcoinAccount.idaccount], callback);
     });
   },
 };
