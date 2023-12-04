@@ -10,7 +10,11 @@
 
 #include "bitcoin.h"
 #include "withdraw.h"
+
+#include "transactions.h"
+
 #include "transfer.h"
+
 
 namespace Ui {
 class Menu;
@@ -50,6 +54,8 @@ private:
     QString idcard, PIN, card_type, idcustomer, fname, lname, idaccount, account_type, account_name,
         balance, bitcoin_balance, bitcoin_account_name;
 
+    transactions * objTransactions;
+
     QByteArray token;
 
     QNetworkAccessManager *manager;
@@ -68,5 +74,4 @@ private slots:
     void updateBalance();
     void updateBalanceSlot();
 };
-
 #endif // MENU_H

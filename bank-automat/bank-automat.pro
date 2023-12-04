@@ -20,6 +20,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
+    transactions.cpp \
     transfer.cpp \
     withdraw.cpp
 
@@ -32,6 +33,7 @@ HEADERS += \
     bitcoin.h \
     mainwindow.hpp \
     menu.h \
+    transactions.h \
     transfer.h \
     withdraw.h
 
@@ -43,6 +45,7 @@ FORMS += \
     bitcoin.ui \
     mainwindow.ui \
     menu.ui \
+    transactions.ui \
     withdraw.ui \
     bill10widget.ui \
     transfer.ui
