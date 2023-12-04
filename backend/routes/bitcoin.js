@@ -45,3 +45,14 @@ router.get('/tobtc', async function (request, response) {
     btc,
   });
 });
+
+router.get('/account/:idaccount/transactions', function (request, response) {
+  bitcoin.getLastFiveTransactions(parseInt(request.params.idaccount), function (error, results) {
+    if (error) {
+      return response.status(400).json({ error: error.message });
+    }
+    return response.json({
+      transactions: results,
+    });
+  });
+});

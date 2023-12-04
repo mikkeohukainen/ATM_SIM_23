@@ -4,6 +4,13 @@
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 
+struct Transaction
+{
+    QString date;
+    QString description;
+    QString bitcoin_amount;
+};
+
 namespace Ui {
 class Bitcoin;
 }
@@ -23,6 +30,7 @@ signals:
     void bitcoinAccountReceived();
     void bitcoinPriceReceived();
     void eurosToBitcoinsReceived();
+    void transactionsReceived();
     void bitcoinsBought();
     void stateChanged();
 
@@ -35,8 +43,17 @@ private:
     void getBitcoinPrice();
     void getEurosToBitcoins();
     void buyBitcoins();
+    void getTransactions();
 
-    enum class State { MAIN, BUY, CONFIRM, NO_FUNDS, DATABASE_CONN_ERR, NETWORK_CONN_ERR };
+    enum class State {
+        MAIN,
+        BUY,
+        CONFIRM,
+        NO_FUNDS,
+        TRANSACTIONS,
+        DATABASE_CONN_ERR,
+        NETWORK_CONN_ERR
+    };
 
     Ui::Bitcoin *ui;
     QNetworkAccessManager *manager;
@@ -51,9 +68,12 @@ private:
     QString bitcoin_balance_eur;
     QString amount_txt;
     QString btc_amount_txt;
+    QString fee_txt;
+    QVector<Transaction> transactions;
 
 private slots:
     void btn_left1_clicked();
+    void btn_left3_clicked();
     void btn_right1_clicked();
     void btn_right3_clicked();
 
@@ -67,6 +87,7 @@ private slots:
     void getBitcoinPriceSlot();
     void getEurosToBitcoinsSlot();
     void buyBitcoinsSlot();
+    void getTransactionsSlot();
 };
 
 #endif // BITCOIN_H

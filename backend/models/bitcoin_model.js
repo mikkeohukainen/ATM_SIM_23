@@ -4,9 +4,10 @@ import transaction from './transaction_model.js';
 
 const BLOCKCHAIN_API_URL = 'https://blockchain.info';
 
-function getBitcoinAccount(idaccount, callback) {
-  db.query(
-    `SELECT bitcoin_account.*
+const bitcoin = {
+  getBitcoinAccount: function (idaccount, callback) {
+    db.query(
+      `SELECT bitcoin_account.*
     FROM account AS debit_account
     INNER JOIN account AS bitcoin_account ON debit_account.idcustomer = bitcoin_account.idcustomer
     INNER JOIN account_access ON bitcoin_account.idaccount = account_access.idaccount
@@ -15,15 +16,13 @@ function getBitcoinAccount(idaccount, callback) {
         AND debit_account.account_type = 'debit'
         AND bitcoin_account.account_type = 'bitcoin'
         AND debit_account.idcustomer = bitcoin_account.idcustomer`,
-    [idaccount],
-    (err, results) => {
-      if (err) callback(err, null);
-      else callback(null, results[0]);
-    }
-  );
-}
-
-const bitcoin = {
+      [idaccount],
+      (err, results) => {
+        if (err) callback(err, null);
+        else callback(null, results[0]);
+      }
+    );
+  },
   eurosToBitcoin: async function (euros) {
     const response = await fetch(`${BLOCKCHAIN_API_URL}/tobtc?currency=EUR&value=${euros}`);
     return response.text();
@@ -34,7 +33,7 @@ const bitcoin = {
     return json.EUR.last;
   },
   getBitcoinAccountByDebitAccountId: function (idaccount, callback) {
-    getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
+    bitcoin.getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
       if (!bitcoinAccount) {
         return callback(new Error('Bitcoin account not found'), null);
       }
@@ -58,7 +57,7 @@ const bitcoin = {
         return callback(new Error('Account must be of type debit'), null);
       }
 
-      getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
+      bitcoin.getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
         if (!bitcoinAccount) {
           return callback(new Error('Bitcoin account not found'), null);
         }
@@ -109,6 +108,12 @@ const bitcoin = {
           new_bitcoin_balance: newBitcoinBalance.toFixed(8),
         });
       });
+    });
+  },
+  getLastFiveTransactions: function (idaccount, callback) {
+    bitcoin.getBitcoinAccount(idaccount, function (_, bitcoinAccount) {
+      const query = `SELECT * FROM transaction WHERE idaccount IN (?, ?) AND bitcoin_amount IS NOT NULL ORDER BY transaction_date DESC LIMIT 5`;
+      db.query(query, [idaccount, bitcoinAccount.idaccount], callback);
     });
   },
 };

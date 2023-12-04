@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1464</width>
-    <height>816</height>
+    <height>868</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,13 +34,13 @@
      <number>135</number>
     </property>
     <property name="topMargin">
-     <number>118</number>
+     <number>135</number>
     </property>
     <property name="rightMargin">
      <number>135</number>
     </property>
     <property name="bottomMargin">
-     <number>65</number>
+     <number>80</number>
     </property>
     <item row="1" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
@@ -54,7 +54,7 @@
        <number>80</number>
       </property>
       <property name="bottomMargin">
-       <number>60</number>
+       <number>80</number>
       </property>
       <item>
        <spacer name="horizontalSpacer_2">
@@ -497,7 +497,7 @@ color: transparent;</string>
          <number>50</number>
         </property>
         <property name="topMargin">
-         <number>35</number>
+         <number>55</number>
         </property>
         <property name="rightMargin">
          <number>50</number>

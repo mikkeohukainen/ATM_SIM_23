@@ -113,7 +113,7 @@ void Menu::btn_right1_clicked()
 {
     if (account_type == "debit" && bitcoinAccount) {
         objBitcoin = new Bitcoin(idaccount, account_name, token, this);
-        objBitcoin->showMaximized();
+        objBitcoin->showFullScreen();
         connect(objBitcoin, &Bitcoin::bitcoinsBought, this, &Menu::updateBalance);
     }
 }

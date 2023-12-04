@@ -1,8 +1,10 @@
 #include "bitcoin.h"
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QScrollArea>
 #include <QUrlQuery>
 #include "ui_bitcoin.h"
 
@@ -29,6 +31,7 @@ Bitcoin::Bitcoin(const QString &debit_account_id,
     connect(this, &Bitcoin::eurosToBitcoinsReceived, this, &Bitcoin::setLabels);
     connect(this, &Bitcoin::stateChanged, this, &Bitcoin::setLabels);
     connect(this, &Bitcoin::bitcoinsBought, this, &Bitcoin::setLabels);
+    connect(this, &Bitcoin::transactionsReceived, this, &Bitcoin::setLabels);
 
     connectMainBtns();
     setLabels();
@@ -53,21 +56,19 @@ void Bitcoin::setLabels()
         while (bitcoin_balance.endsWith("0")) {
             bitcoin_balance.chop(1);
         }
-        ui->label_top->setText(("TILI: " + bitcoin_account_name + "\n\nSALDO: " + bitcoin_balance
-                                + "₿ (" + bitcoin_balance_eur + "€)"
-                                + "\n\nKURSSI: " + bitcoin_price + "€")
+        ui->label_top->setText(("TILI: " + bitcoin_account_name + "\nSALDO: " + bitcoin_balance
+                                + "₿ (" + bitcoin_balance_eur + "€)" + "\nKURSSI: " + bitcoin_price
+                                + "€")
                                    .toUpper());
         ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        ui->label_left2->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         ui->label_left3->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->txt_right2->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         ui->label_right3->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
         connect(ui->btn_left1, &QPushButton::clicked, this, &Bitcoin::btn_left1_clicked);
         ui->label_left1->setText("OSTA BITCOINEJA");
         ui->label_left2->clear();
-        ui->label_left3->clear();
+        ui->label_left3->setText("TILITAPAHTUMAT");
         ui->txt_right1->clear();
         ui->txt_right2->clear();
         amount_txt.clear();
@@ -82,12 +83,12 @@ void Bitcoin::setLabels()
         ui->label_top->setText("SYÖTÄ SUMMA EUROINA JA PAINA ENTER");
         ui->label_left1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         ui->label_left1->setText("SUMMA:  ");
+        ui->label_left3->clear();
         ui->txt_right1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         ui->txt_right1->setFocus();
         break;
     }
-    case State::CONFIRM:
-
+    case State::CONFIRM: {
         ui->label_left1->clear();
         ui->txt_right1->clear();
         ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -105,14 +106,40 @@ void Bitcoin::setLabels()
                                  "VELOITETTAVA TILI:  "
                                + debit_account_name);
         break;
-    case State::NO_FUNDS:
+    }
+    case State::NO_FUNDS: {
         disconnectBtns();
         connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
         ui->label_left1->clear();
         ui->txt_right1->clear();
         ui->label_top->setText("KATE EI RIITÄ");
         break;
-    case State::DATABASE_CONN_ERR:
+    }
+    case State::TRANSACTIONS: {
+        disconnectBtns();
+        connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
+        ui->label_top->setText("TILITAPAHTUMAT\n");
+        ui->label_left1->clear();
+        ui->label_left3->clear();
+        ui->txt_right1->clear();
+
+        if (transactions.empty()) {
+            ui->label_top->setText(ui->label_top->text() + "\nEI TAPAHTUMIA");
+        } else {
+            for (auto &transaction : transactions) {
+                ui->label_top->setText(ui->label_top->text()
+                                       + "\n"
+                                         "[OSTO]  "
+                                       + QDateTime::fromString(transaction.date, Qt::ISODate)
+                                             .toLocalTime()
+                                             .toString("d.MM hh:mm")
+                                       + " " + transaction.bitcoin_amount + "₿");
+            }
+        }
+
+        break;
+    }
+    case State::DATABASE_CONN_ERR: {
         ui->label_left1->clear();
         disconnectBtns();
         connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
@@ -120,7 +147,8 @@ void Bitcoin::setLabels()
         ui->label_right3->setText("SULJE");
         ui->label_top->setText("VIRHE TIETOKANTAYHTEYDESSÄ");
         break;
-    case State::NETWORK_CONN_ERR:
+    }
+    case State::NETWORK_CONN_ERR: {
         ui->label_left1->clear();
         disconnectBtns();
         connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
@@ -129,12 +157,14 @@ void Bitcoin::setLabels()
         ui->label_top->setText("PALVELIN EI VASTAA");
         break;
     }
+    }
 }
 
 void Bitcoin::connectMainBtns()
 {
     connect(ui->btn_left1, &QPushButton::clicked, this, &Bitcoin::btn_left1_clicked);
     connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
+    connect(ui->btn_left3, &QPushButton::clicked, this, &Bitcoin::btn_left3_clicked);
 }
 
 void Bitcoin::disconnectBtns()
@@ -272,6 +302,32 @@ void Bitcoin::buyBitcoinsSlot()
     }
 }
 
+void Bitcoin::getTransactions()
+{
+    QString url = "http://localhost:3000/bitcoin/account/" + debit_account_id + "/transactions";
+    QNetworkRequest request(url);
+    request.setRawHeader(QByteArray("Authorization"), token);
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &Bitcoin::getTransactionsSlot);
+}
+
+void Bitcoin::getTransactionsSlot()
+{
+    QScopedPointer<QNetworkReply> reply(qobject_cast<QNetworkReply *>(sender()));
+    QByteArray data = reply->readAll();
+    QJsonDocument json = QJsonDocument::fromJson(data);
+    QJsonObject obj = json.object();
+    QJsonArray arr = obj["transactions"].toArray();
+
+    for (const auto &&value : arr) {
+        QJsonObject obj = value.toObject();
+        transactions.push_back({.date = obj["transaction_date"].toString(),
+                                .description = obj["transaction_description"].toString(),
+                                .bitcoin_amount = obj["bitcoin_amount"].toString()});
+    }
+    emit transactionsReceived();
+}
+
 void Bitcoin::enter_btn_clicked()
 {
     if (!amount_txt.isEmpty() && state == State::BUY) {
@@ -314,6 +370,18 @@ void Bitcoin::btn_left1_clicked()
     }
 }
 
+void Bitcoin::btn_left3_clicked()
+{
+    if (state == State::MAIN) {
+        getTransactions();
+        QFont font = ui->label_top->font();
+        font.setPointSize(2);
+        ui->label_top->setFont(font);
+        state = State::TRANSACTIONS;
+        emit stateChanged();
+    }
+}
+
 void Bitcoin::btn_right1_clicked()
 {
     if (state == State::BUY && !amount_txt.isEmpty()) {
@@ -334,7 +402,10 @@ void Bitcoin::btn_right3_clicked()
     if (state == State::MAIN || state == State::DATABASE_CONN_ERR
         || state == State::NETWORK_CONN_ERR) {
         this->close();
-    } else if (state == State::BUY) {
+    } else if (state == State::BUY || state == State::TRANSACTIONS) {
+        if (state == State::TRANSACTIONS) {
+            transactions.clear();
+        }
         connectMainBtns();
         state = State::MAIN;
         emit stateChanged();
