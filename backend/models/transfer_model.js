@@ -14,6 +14,30 @@ function validateAmount(amount) {
 }
 
 const transfer = {
+  getReceiverInfo: function (receivingAccountId, callback) {
+    // Get receivers info (name and account_type)
+    db.query(
+      'SELECT c.fname, c.lname, a.account_type ' +
+        'FROM account a ' +
+        'JOIN customer c ON a.idcustomer = c.idcustomer ' +
+        'WHERE a.idaccount = ?',
+      [receivingAccountId],
+      function (err, results) {
+        if (err) {
+          callback(err, null);
+        } else {
+          if (results.length > 0) {
+            const receiver = results[0];
+            const receiverName = receiver.fname + ' ' + receiver.lname;
+            const accountType = receiver.account_type;
+            callback(null, { name: receiverName, type: accountType });
+          } else {
+            callback(new Error('Receiver account not found'), null);
+          }
+        }
+      }
+    );
+  },
   bankTransfer: function (sendingAccountId, receivingAccountId, amount, callback) {
     if (amount <= 0) {
       return callback(new Error('Amount must be positive'), null);
@@ -36,33 +60,21 @@ const transfer = {
           connection.release();
           return callback(err);
         }
+        // First query: Get receivers info (name and account_type). Check if receiver account is valid.
+        transfer.getReceiverInfo(receivingAccountId, function (err, receiverInfo) {
+          if (err) {
+            return callback(err);
+          }
 
-        // First query: Check if receiver account is valid. Get name of the receiver
-        connection.query(
-          'SELECT c.fname, c.lname, a.account_type ' +
-            'FROM account a ' +
-            'JOIN customer c ON a.idcustomer = c.idcustomer ' +
-            'WHERE a.idaccount = ?',
-          [receivingAccountId],
-          function (err, results) {
-            if (err) {
-              return connection.rollback(function () {
-                connection.release();
-                callback(err);
-              });
-            }
+          if (!receiverInfo) {
+            return callback(new Error('Receiver account not found'));
+          }
 
-            const receivingAccount = results[0];
+          if (receiverInfo.type === 'bitcoin') {
+            return callback(new Error('Account must be type Debit or Credit'));
+          }
 
-            if (!receivingAccount) {
-              connection.release();
-              return callback(new Error('Receiver account not found'));
-            }
-            if (receivingAccount.account_type === 'bitcoin') {
-              connection.release();
-              return callback(new Error('Account must be type Debit or Credit'));
-            }
-            const receiverName = receivingAccount.fname + ' ' + receivingAccount.lname;
+          const receiverName = receiverInfo.name;
 
             // Second query:  Check sender's account balance and credit limit, get sender's name
             connection.query(

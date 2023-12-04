@@ -10,10 +10,13 @@ Menu::Menu(QWidget *parent) :
     ui->mycentralwidget->setStyleSheet("QWidget#mycentralwidget{image: url(:/new/prefix1/img/GUI_noBTNS.png);}");
 
     connectMenuBtns();
+
+    getBalanceManager = new QNetworkAccessManager(this);
 }
 
 Menu::~Menu()
 {
+    getBalanceManager->deleteLater();
     delete ui;
 }
 
@@ -76,12 +79,18 @@ void Menu::btn_left1_clicked()
 {
     objWithdraw = new Withdraw;
     objWithdraw->setVars(idaccount, account_type, token);
-    objWithdraw->showMaximized();
+    objWithdraw->showFullScreen();
+
+    connect(objWithdraw, &Withdraw::moneyWithdrawn, this, &Menu::updateBalance);
 }
 
 void Menu::btn_left2_clicked()
 {
+    objTransfer = new Transfer;
+    objTransfer->setVars(idaccount, token);
+    objTransfer->showFullScreen();
 
+    connect(objTransfer, &Transfer::updateSenderBalance, this, &Menu::updateBalance);
 }
 
 void Menu::btn_left3_clicked()
@@ -106,4 +115,32 @@ void Menu::btn_right2_clicked()
 void Menu::btn_right3_clicked()
 {
     this->close();
+}
+
+void Menu::updateBalance()
+{
+    QString site_url = "http://localhost:3000/account/"+idaccount;
+    QNetworkRequest request((site_url));
+
+    //WEBTOKEN ALKU
+    request.setRawHeader(QByteArray("Authorization"),(token));
+    //WEBTOKEN LOPPU
+
+    disconnect(getBalanceManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updateBalanceSlot(QNetworkReply*)));
+    connect(getBalanceManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updateBalanceSlot(QNetworkReply*)));
+
+    reply_balance = getBalanceManager->get(request);
+}
+
+void Menu::updateBalanceSlot(QNetworkReply *reply)
+{
+    response_data_balance = reply->readAll();
+
+    QJsonDocument json_doc = QJsonDocument::fromJson(response_data_balance);
+    QJsonObject json_obj = json_doc.object();
+    balance = json_obj["balance"].toString();
+
+    reply->deleteLater();
+
+    ui->label_top->setText(("TILI: "+account_name+"\n\nSALDO: "+balance).toUpper());
 }
