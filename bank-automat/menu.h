@@ -9,7 +9,11 @@
 #include <QJsonDocument>
 
 #include "withdraw.h"
+
+#include "transactions.h"
+
 #include "transfer.h"
+
 
 namespace Ui {
 class Menu;
@@ -34,7 +38,11 @@ public:
 private:
     Ui::Menu *ui;
     Withdraw *objWithdraw;
+
+    transactions * objTransactions;
+
     Transfer *objTransfer;
+
 
     QString idcard, PIN, card_type, idcustomer,
             fname, lname, idaccount, account_type,
@@ -60,5 +68,4 @@ private slots:
     void updateBalance();
     void updateBalanceSlot(QNetworkReply *reply);
 };
-
 #endif // MENU_H

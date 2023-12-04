@@ -19,6 +19,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     menu.cpp \
+    transactions.cpp \
     transfer.cpp \
     withdraw.cpp
 
@@ -30,6 +31,7 @@ HEADERS += \
     bill50widget.h \
     mainwindow.hpp \
     menu.h \
+    transactions.h \
     transfer.h \
     withdraw.h
 
@@ -40,6 +42,7 @@ FORMS += \
     bill50widget.ui \
     mainwindow.ui \
     menu.ui \
+    transactions.ui \
     withdraw.ui \
     bill10widget.ui \
     transfer.ui
