@@ -4,13 +4,6 @@
 #include <QMainWindow>
 #include <QNetworkAccessManager>
 
-struct Transaction
-{
-    QString date;
-    QString description;
-    QString bitcoin_amount;
-};
-
 namespace Ui {
 class Bitcoin;
 }
@@ -35,6 +28,13 @@ signals:
     void stateChanged();
 
 private:
+    struct Transaction
+    {
+        QString date;
+        QString description;
+        QString bitcoin_amount;
+    };
+
     void setLabels();
     void connectMainBtns();
     void connectBuyBtns();
