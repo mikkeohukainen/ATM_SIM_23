@@ -37,9 +37,7 @@ private:
     Bill100Widget *obj100EUR;
     Bill500Widget *obj500EUR;*/
 
-    QNetworkAccessManager *postManager;
-    QNetworkReply *reply;
-    QByteArray response_data;
+    QNetworkAccessManager *manager;
 
     QString idaccount, account_type,
             amount, amountTxt;
@@ -82,7 +80,7 @@ private slots:
     void goBack();
 
     void startWithdrawal();
-    void withdrawMoneySlot(QNetworkReply *reply);
+    void withdrawMoneySlot();
 };
 
 #endif // WITHDRAW_H

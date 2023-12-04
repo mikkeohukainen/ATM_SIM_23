@@ -4,42 +4,44 @@ import transaction from './transaction_model.js';
 
 const BLOCKCHAIN_API_URL = 'https://blockchain.info';
 
-async function eurosToBitcoin(euros) {
-  const response = await fetch(`${BLOCKCHAIN_API_URL}/tobtc?currency=EUR&value=${euros}`);
-  return response.json();
-}
-
-function getBitcoinAccount(idaccount, callback) {
-  db.query(
-    `SELECT bitcoin_account.*
-    FROM account AS debit_account
-    INNER JOIN account AS bitcoin_account ON debit_account.idcustomer = bitcoin_account.idcustomer
-    INNER JOIN account_access ON bitcoin_account.idaccount = account_access.idaccount
-    INNER JOIN card ON account_access.idcard = card.idcard
-    WHERE debit_account.idaccount = ?
-        AND debit_account.account_type = 'debit'
-        AND bitcoin_account.account_type = 'bitcoin'
-        AND debit_account.idcustomer = bitcoin_account.idcustomer`,
-    [idaccount],
-    (err, results) => {
-      if (err) callback(err, null);
-      else callback(null, results[0]);
-    }
-  );
-}
-
 const bitcoin = {
+  getBitcoinAccount: function (idaccount, callback) {
+    db.query(
+      `SELECT bitcoin_account.*
+      FROM account AS bitcoin_account
+      WHERE bitcoin_account.account_type = 'bitcoin'
+      AND bitcoin_account.idcustomer IN (SELECT debit_account.idcustomer
+                                        FROM account AS debit_account
+                                        WHERE debit_account.idaccount = ?
+                                        AND debit_account.account_type = 'debit');`,
+      [idaccount],
+      (err, results) => {
+        if (err) callback(err, null);
+        else callback(null, results[0]);
+      }
+    );
+  },
+  eurosToBitcoin: async function (euros) {
+    const response = await fetch(`${BLOCKCHAIN_API_URL}/tobtc?currency=EUR&value=${euros}`);
+    return response.text();
+  },
   getLastPrice: async function () {
     const response = await fetch(`${BLOCKCHAIN_API_URL}/ticker`);
     const json = await response.json();
     return json.EUR.last;
   },
-  getBalanceByAccountId: function (idaccount, callback) {
-    getBitcoinAccount(idaccount, function (_, bitcoinAccount) {
+  getBitcoinAccountByDebitAccountId: function (idaccount, callback) {
+    bitcoin.getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
       if (!bitcoinAccount) {
         return callback(new Error('Bitcoin account not found'), null);
       }
-      return callback(null, bitcoinAccount.bitcoin_balance);
+      const lastPrice = await bitcoin.getLastPrice();
+      return callback(null, {
+        bitcoin_balance_eur: (
+          Math.round(parseFloat(bitcoinAccount.bitcoin_balance) * lastPrice * 100) / 100
+        ).toString(),
+        ...bitcoinAccount,
+      });
     });
   },
   buy: async function (idaccount, euros, callback) {
@@ -53,7 +55,7 @@ const bitcoin = {
         return callback(new Error('Account must be of type debit'), null);
       }
 
-      getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
+      bitcoin.getBitcoinAccount(idaccount, async function (_, bitcoinAccount) {
         if (!bitcoinAccount) {
           return callback(new Error('Bitcoin account not found'), null);
         }
@@ -73,7 +75,7 @@ const bitcoin = {
           idcustomer: debitAccount.idcustomer,
         });
 
-        const bitcoins = await eurosToBitcoin(euros);
+        const bitcoins = parseFloat(await bitcoin.eurosToBitcoin(euros));
         const newBitcoinBalance = parseFloat(bitcoinAccount.bitcoin_balance) + bitcoins;
 
         account.update(bitcoinAccount.idaccount, {
@@ -100,11 +102,16 @@ const bitcoin = {
         });
 
         return callback(null, {
-          euros: euros,
-          balance: newBalance,
-          bitcoin_balance: newBitcoinBalance,
+          new_balance: newBalance.toString(),
+          new_bitcoin_balance: newBitcoinBalance.toFixed(8),
         });
       });
+    });
+  },
+  getLastFiveTransactions: function (idaccount, callback) {
+    bitcoin.getBitcoinAccount(idaccount, function (_, bitcoinAccount) {
+      const query = `SELECT * FROM transaction WHERE idaccount = ? AND bitcoin_amount IS NOT NULL ORDER BY transaction_date DESC LIMIT 5`;
+      db.query(query, [bitcoinAccount.idaccount], callback);
     });
   },
 };
