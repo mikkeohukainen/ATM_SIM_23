@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 
 #include "withdraw.h"
+#include "transactions.h"
 
 namespace Ui {
 class Menu;
@@ -33,6 +34,7 @@ public:
 private:
     Ui::Menu *ui;
     Withdraw *objWithdraw;
+    transactions * objTransactions;
 
     QString idcard, PIN, card_type, idcustomer,
             fname, lname, idaccount, account_type,
@@ -52,5 +54,4 @@ private slots:
     void btn_right2_clicked();
     void btn_right3_clicked();
 };
-
 #endif // MENU_H

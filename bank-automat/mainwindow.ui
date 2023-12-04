@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1412</width>
-    <height>814</height>
+    <height>822</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -446,6 +446,11 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 255, 255, 255), stop:1 rgba(197, 197, 197, 255));
 color: transparent;</string>
@@ -504,6 +509,14 @@ color: transparent;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_top">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>16</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">background-color: black;
 color: rgb(170, 255, 127);
@@ -524,6 +537,14 @@ font: 16pt &quot;Segoe UI&quot;;</string>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_left1">
+            <property name="font">
+             <font>
+              <family>Segoe UI</family>
+              <pointsize>14</pointsize>
+              <italic>false</italic>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="styleSheet">
              <string notr="true">background-color: black;
 color: rgb(170, 255, 127);

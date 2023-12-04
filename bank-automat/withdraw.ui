@@ -504,6 +504,14 @@ color: transparent;</string>
         </property>
         <item>
          <widget class="QLabel" name="label_top">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>16</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">background-color: black;
 color: rgb(170, 255, 127);
