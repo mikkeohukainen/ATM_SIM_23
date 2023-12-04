@@ -11,11 +11,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    bill100widget.cpp \
-    bill10widget.cpp \
-    bill20widget.cpp \
-    bill500widget.cpp \
-    bill50widget.cpp \
+    billwidget.cpp \
     bitcoin.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -25,11 +21,7 @@ SOURCES += \
     withdraw.cpp
 
 HEADERS += \
-    bill100widget.h \
-    bill10widget.h \
-    bill20widget.h \
-    bill500widget.h \
-    bill50widget.h \
+    billwidget.h \
     bitcoin.h \
     mainwindow.hpp \
     menu.h \
@@ -38,16 +30,12 @@ HEADERS += \
     withdraw.h
 
 FORMS += \
-    bill100widget.ui \
-    bill20widget.ui \
-    bill500widget.ui \
-    bill50widget.ui \
+    billwidget.ui \
     bitcoin.ui \
     mainwindow.ui \
     menu.ui \
     transactions.ui \
     withdraw.ui \
-    bill10widget.ui \
     transfer.ui
     
 # Default rules for deployment.
