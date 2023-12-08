@@ -88,7 +88,7 @@ const withdrawal = {
 
                 // Third query: log the transaction
                 connection.query(
-                  'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) VALUES (?, ?, "withdraw", NOW(), "ATM Credit Withdrawal")',
+                  'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) VALUES (?, ?, "withdraw", NOW(), "Käteisnosto")',
                   [idaccount, -amount],
                   function (err, result) {
                     if (err) {
@@ -192,7 +192,7 @@ const withdrawal = {
 
                 // Third query: log the transaction
                 connection.query(
-                  'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) VALUES (?, ?, "withdraw", NOW(), "ATM Debit Withdrawal")',
+                  'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) VALUES (?, ?, "withdraw", NOW(), "Käteisnosto")',
                   [idaccount, -amount],
                   function (err, result) {
                     if (err) {

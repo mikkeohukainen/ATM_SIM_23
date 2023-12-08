@@ -40,8 +40,8 @@ void Transactions::setLabel()
     ui->txt_right2->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->label_right3->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-    ui->label_left1->setText("SEURAAVA");
-    ui->label_left2->setText("EDELLINEN");
+    ui->label_left1->setText("\nSEURAAVA");
+    ui->label_left2->setText("\nEDELLINEN");
     ui->label_left3->setText("");
 
     ui->txt_right1->setText("");
@@ -101,10 +101,14 @@ void Transactions::getTransactionsSlot()
 
     for (const auto &transaction : transactions) {
         QJsonObject obj = transaction.toObject();
-        QString transaction_type = obj["transaction_type"].toString() == "withdraw"
+        /*QString transaction_type = obj["transaction_type"].toString() == "withdraw"
                                        ? "[NOSTO]  "
                                        : "[TALLETUS]  ";
-        displayText += transaction_type;
+        displayText += transaction_type;*/
+
+        QString transaction_desc = obj["transaction_description"].toString();
+
+        displayText += transaction_desc.toUpper() + ": ";
 
         auto datetime = QDateTime::fromString(obj["transaction_date"].toString(), Qt::ISODate)
                             .toLocalTime()

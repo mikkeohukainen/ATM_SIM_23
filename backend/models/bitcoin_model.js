@@ -90,14 +90,14 @@ const bitcoin = {
         transaction.add({
           amount: -euros,
           transaction_type: 'withdraw',
-          transaction_description: 'Bitcoin purchase',
+          transaction_description: 'Bitcoin osto',
           idaccount: debitAccount.idaccount,
         });
 
         transaction.addBitcoin({
           bitcoin_amount: bitcoins,
           transaction_type: 'deposit',
-          transaction_description: 'Bitcoin purchase',
+          transaction_description: 'Bitcoin osto',
           idaccount: bitcoinAccount.idaccount,
         });
 
