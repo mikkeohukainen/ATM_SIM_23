@@ -168,6 +168,7 @@ void MainWindow::setUpLoginLabels()
     ui->txt_right1->setFocus();
 
     disconnect(ui->btn_right3, &QPushButton::clicked, this, &MainWindow::setUpLoginLabels);
+    connect(ui->btn_right3, &QPushButton::clicked, this, &MainWindow::thisClose);
 
     clearData();
 }
@@ -198,6 +199,7 @@ void MainWindow::reset()
 
     ui->label_right3->setText("TAKAISIN");
 
+    disconnect(ui->btn_right3, &QPushButton::clicked, this, &MainWindow::thisClose);
     connect(ui->btn_right3, &QPushButton::clicked, this, &MainWindow::setUpLoginLabels);
 }
 
@@ -511,7 +513,6 @@ void MainWindow::setUpMenu()
                     bitcoin_account_name);
     objMenu->setUpMenuTxt();
     objMenu->showFullScreen();
-    //clearData();
     setUpLoginLabels();
     disconnectLoginBtns();
     connectLoginBtns();

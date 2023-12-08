@@ -35,23 +35,23 @@ void transactions::setLabel()
 {
 
 
-    ui->label_top->setText("Tilitapahtumat");
+    //ui->label_top->setText("Tilitapahtumat");
 
 
-    ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    //ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->label_left2->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->label_left3->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    //ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->txt_right2->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->label_right3->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-    ui->label_left1->setText("Seuraava");
-    ui->label_left2->setText("Edellinen");
-    ui->label_left3->setText("");
+    ui->label_left1->setText("");
+    ui->label_left2->setText("SEURAAVA");
+    ui->label_left3->setText("EDELLINEN");
 
     ui->txt_right1->setText("");
     ui->txt_right2->setText("");
-    ui->label_right3->setText("Takaisin");
+    ui->label_right3->setText("PÄÄVALIKKO");
 }
 
 void transactions::connectBtns()
@@ -89,14 +89,14 @@ void transactions::showTransactions()
 
 void transactions::ShowTransactionsSlot(QNetworkReply *reply_transaction)
 {
-    QFont font;
+    /*QFont font;
         ui->label_top->setStyleSheet("");
         font.setPointSize(12);
         ui->label_top->setStyleSheet("color: green;");
         font.setFamily("Arial");
 
 
-        ui->label_top->setFont(font);
+        ui->label_top->setFont(font);*/
 
 
 
@@ -173,39 +173,42 @@ void transactions::ShowTransactionsSlot(QNetworkReply *reply_transaction)
 }
 
 void transactions::btn_left1_clicked()
-{   qDebug() << "btn_left1_clicked called";
-    qDebug() << "Current startIndex:" << startIndex;
-    startIndex = startIndex + 5;
-    //ui->txt_right1->setText(QString::number(startIndex));
-    showTransactions();
-    qDebug()<<"btn1";
+{
 
 }
 
 void transactions::btn_left2_clicked()
 {
+                 qDebug() << "btn_left1_clicked called";
+                 qDebug() << "Current startIndex:" << startIndex;
+                 startIndex = startIndex + 5;
+                 //ui->txt_right1->setText(QString::number(startIndex));
+                 showTransactions();
+                 qDebug()<<"btn1";
+}
+
+void transactions::btn_left3_clicked()
+{
     if(startIndex!=0)
     {
-     startIndex = startIndex - 5;
-        qDebug()<<"-5";
-        showTransactions();
-        //connect(ui->btn_left1, &QPushButton::clicked, this, &transactions::btn_left1_clicked);
+                      startIndex = startIndex - 5;
+                      qDebug()<<"-5";
+                      showTransactions();
+                      //connect(ui->btn_left1, &QPushButton::clicked, this, &transactions::btn_left1_clicked);
     }
 
     //ui->txt_right1->setText(QString::number(startIndex));
     qDebug() << "Current startIndex:" << startIndex;
     //connect(ui->btn_left1, &QPushButton::clicked, this, &transactions::btn_left1_clicked);
 
-}
 
-void transactions::btn_left3_clicked()
-{
-    startIndex = 0;
+
+    /*startIndex = 0;
     showTransactions();
     ui->label_left1->setText("Seuraava");
     ui->label_left2->setText("Edellinen");
     ui->label_left3->setText("");
-    connect(ui->btn_left2, &QPushButton::clicked, this, &transactions::btn_left2_clicked);
+    connect(ui->btn_left2, &QPushButton::clicked, this, &transactions::btn_left2_clicked);*/
 
 }
 
