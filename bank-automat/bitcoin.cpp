@@ -46,7 +46,7 @@ Bitcoin::~Bitcoin()
 
 void Bitcoin::setLabels()
 {
-    ui->label_right3->setText("TAKAISIN");
+    ui->label_right3->setText("PÄÄVALIKKO");
 
     switch (state) {
     case State::MAIN: {
@@ -81,6 +81,7 @@ void Bitcoin::setLabels()
         connect(ui->btn_right1, &QPushButton::clicked, this, &Bitcoin::btn_right1_clicked);
         connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
         ui->label_top->setText("SYÖTÄ SUMMA EUROINA JA PAINA ENTER");
+        ui->label_right3->setText("TAKAISIN");
         ui->label_left1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         ui->label_left1->setText("SUMMA:  ");
         ui->label_left3->clear();
@@ -93,6 +94,7 @@ void Bitcoin::setLabels()
         ui->txt_right1->clear();
         ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         ui->txt_right1->setText("VAHVISTA");
+        ui->label_right3->setText("TAKAISIN");
         ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         ui->label_left2->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         ui->label_left3->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -111,14 +113,17 @@ void Bitcoin::setLabels()
         disconnectBtns();
         connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
         ui->label_left1->clear();
+        ui->label_left3->clear();
         ui->txt_right1->clear();
         ui->label_top->setText("KATE EI RIITÄ");
+        ui->label_right3->setText("TAKAISIN");
         break;
     }
     case State::TRANSACTIONS: {
         disconnectBtns();
         connect(ui->btn_right3, &QPushButton::clicked, this, &Bitcoin::btn_right3_clicked);
         ui->label_top->setText("TILITAPAHTUMAT\n");
+        ui->label_right3->setText("TAKAISIN");
         ui->label_left1->clear();
         ui->label_left3->clear();
         ui->txt_right1->clear();
@@ -355,7 +360,7 @@ void Bitcoin::number_btn_clicked()
     QString name = button->objectName();
 
     if (amount_txt.length() < 7) {
-        amount_txt += name.rightRef(1);
+        amount_txt += name.right(1);
     }
     ui->txt_right1->setText(amount_txt);
 }
