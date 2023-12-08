@@ -106,11 +106,10 @@ void Menu::btn_left2_clicked()
 
 void Menu::btn_left3_clicked()
 {
-    objTransactions = new transactions;
+    objTransactions = new Transactions;
     objTransactions->setVariables(idaccount, token);
-    objTransactions->showMaximized();
-    objTransactions->showTransactions();
-
+    objTransactions->showFullScreen();
+    objTransactions->getTransactions();
 }
 
 void Menu::btn_right1_clicked()

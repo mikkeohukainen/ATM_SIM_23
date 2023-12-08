@@ -11,26 +11,27 @@
 #include <QTimer>
 #include <QFont>
 
+#include "ui_transactions.h"
+
 namespace Ui {
-class transactions;
+class Transactions;
 }
 
-class transactions : public QMainWindow
+class Transactions : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit transactions(QWidget *parent = nullptr);
-    ~transactions();
+    explicit Transactions(QWidget *parent = nullptr);
+    ~Transactions();
 
     void setVariables(const QString &newIdaccount,const QByteArray &newToken);
-    void showTransactions();
-private:
-    Ui::transactions *ui;
+    void getTransactions();
 
-    QNetworkAccessManager *getManager;
-    QNetworkReply *reply_transaction;
-    QByteArray response_data_transactions;
+private:
+    Ui::Transactions *ui;
+
+    QNetworkAccessManager *manager;
 
     QString idaccount;
 
@@ -53,7 +54,7 @@ private slots:
     void btn_right1_clicked();
     void btn_right2_clicked();
     void btn_right3_clicked();
-    void ShowTransactionsSlot(QNetworkReply *reply_transaction);
+    void getTransactionsSlot();
 };
 
 #endif // TRANSACTIONS_H

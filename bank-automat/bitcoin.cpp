@@ -355,7 +355,7 @@ void Bitcoin::number_btn_clicked()
     QString name = button->objectName();
 
     if (amount_txt.length() < 7) {
-        amount_txt += name.rightRef(1);
+        amount_txt += name.right(1);
     }
     ui->txt_right1->setText(amount_txt);
 }

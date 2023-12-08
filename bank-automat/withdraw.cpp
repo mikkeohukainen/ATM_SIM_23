@@ -2,12 +2,6 @@
 #include "billwidget.h"
 #include "ui_withdraw.h"
 
-#include "bill10widget.h"
-#include "bill20widget.h"
-#include "bill50widget.h"
-#include "bill100widget.h"
-#include "bill500widget.h"
-
 Withdraw::Withdraw(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Withdraw)

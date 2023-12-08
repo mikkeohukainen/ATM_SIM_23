@@ -50,11 +50,10 @@ private:
     Withdraw *objWithdraw;
     Bitcoin *objBitcoin;
     Transfer *objTransfer;
+    Transactions *objTransactions;
 
     QString idcard, PIN, card_type, idcustomer, fname, lname, idaccount, account_type, account_name,
         balance, bitcoin_balance, bitcoin_account_name;
-
-    transactions * objTransactions;
 
     QByteArray token;
 
