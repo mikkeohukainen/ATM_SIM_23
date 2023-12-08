@@ -76,151 +76,150 @@ const transfer = {
 
           const receiverName = receiverInfo.name;
 
-            // Second query:  Check sender's account balance and credit limit, get sender's name
-            connection.query(
-              'SELECT a.balance, a.credit_limit, a.account_type, c.fname, c.lname ' +
-                'FROM account a ' +
-                'JOIN customer c ON a.idcustomer = c.idcustomer ' +
-                'WHERE a.idaccount = ?',
-              [sendingAccountId],
-              function (err, results) {
-                if (err) {
-                  return connection.rollback(function () {
-                    connection.release();
-                    callback(err);
-                  });
-                }
-
-                const sendingAccount = results[0];
-
-                if (!sendingAccount) {
+          // Second query:  Check sender's account balance and credit limit, get sender's name
+          connection.query(
+            'SELECT a.balance, a.credit_limit, a.account_type, c.fname, c.lname ' +
+              'FROM account a ' +
+              'JOIN customer c ON a.idcustomer = c.idcustomer ' +
+              'WHERE a.idaccount = ?',
+            [sendingAccountId],
+            function (err, results) {
+              if (err) {
+                return connection.rollback(function () {
                   connection.release();
-                  return callback(new Error('Sending account not found'));
-                }
-                const senderName = sendingAccount.fname + ' ' + sendingAccount.lname;
-                const accountBalance = parseFloat(sendingAccount.balance);
-                const creditLimit = parseFloat(sendingAccount.credit_limit);
-                const transferAmount = parseFloat(amount);
+                  callback(err);
+                });
+              }
 
-                if (sendingAccount.account_type === 'debit') {
-                  if (accountBalance < transferAmount) {
-                    connection.release();
-                    return callback(new Error('Insufficient funds'));
-                  }
-                } else if (sendingAccount.account_type === 'credit') {
-                  if (creditLimit + accountBalance < transferAmount) {
-                    connection.release();
-                    return callback(new Error('Insufficient funds'));
-                  }
-                } else {
+              const sendingAccount = results[0];
+
+              if (!sendingAccount) {
+                connection.release();
+                return callback(new Error('Sending account not found'));
+              }
+              const senderName = sendingAccount.fname + ' ' + sendingAccount.lname;
+              const accountBalance = parseFloat(sendingAccount.balance);
+              const creditLimit = parseFloat(sendingAccount.credit_limit);
+              const transferAmount = parseFloat(amount);
+
+              if (sendingAccount.account_type === 'debit') {
+                if (accountBalance < transferAmount) {
                   connection.release();
-                  return callback(new Error('Account must be of type Debit or Credit'));
+                  return callback(new Error('Insufficient funds'));
                 }
+              } else if (sendingAccount.account_type === 'credit') {
+                if (creditLimit + accountBalance < transferAmount) {
+                  connection.release();
+                  return callback(new Error('Insufficient funds'));
+                }
+              } else {
+                connection.release();
+                return callback(new Error('Account must be of type Debit or Credit'));
+              }
 
-                // Third query: Update sender account
+              // Third query: Update sender account
 
-                connection.query(
-                  'UPDATE account SET balance = balance - ? WHERE idaccount = ?',
-                  [amount, sendingAccountId],
-                  function (err, result) {
-                    if (err) {
-                      return connection.rollback(function () {
-                        connection.release();
-                        callback(err);
-                      });
-                    }
+              connection.query(
+                'UPDATE account SET balance = balance - ? WHERE idaccount = ?',
+                [amount, sendingAccountId],
+                function (err, result) {
+                  if (err) {
+                    return connection.rollback(function () {
+                      connection.release();
+                      callback(err);
+                    });
+                  }
 
-                    if (result.affectedRows === 0) {
-                      return connection.rollback(function () {
-                        connection.release();
-                        callback(new Error('Error updating sender account'));
-                      });
-                    }
+                  if (result.affectedRows === 0) {
+                    return connection.rollback(function () {
+                      connection.release();
+                      callback(new Error('Error updating sender account'));
+                    });
+                  }
 
-                    // Fourth query: Update receiver account
-                    connection.query(
-                      'UPDATE account SET balance = balance + ? WHERE idaccount = ?',
-                      [amount, receivingAccountId],
-                      function (err, result) {
-                        if (err) {
-                          return connection.rollback(function () {
-                            connection.release();
-                            callback(err);
-                          });
-                        }
+                  // Fourth query: Update receiver account
+                  connection.query(
+                    'UPDATE account SET balance = balance + ? WHERE idaccount = ?',
+                    [amount, receivingAccountId],
+                    function (err, result) {
+                      if (err) {
+                        return connection.rollback(function () {
+                          connection.release();
+                          callback(err);
+                        });
+                      }
 
-                        if (result.affectedRows === 0) {
-                          return connection.rollback(function () {
-                            connection.release();
-                            callback(new Error('Error updating receiver account'));
-                          });
-                        }
-                        // Fifth query: Log sender transaction
-                        connection.query(
-                          'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) VALUES (?, ?, "withdraw", NOW(), "Bank Transfer to ' +
-                            receiverName +
-                            '")',
-                          [sendingAccountId, -amount],
-                          function (err, result) {
-                            if (err) {
-                              return connection.rollback(function () {
-                                connection.release();
-                                callback(err);
-                              });
-                            }
+                      if (result.affectedRows === 0) {
+                        return connection.rollback(function () {
+                          connection.release();
+                          callback(new Error('Error updating receiver account'));
+                        });
+                      }
+                      // Fifth query: Log sender transaction
+                      connection.query(
+                        'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) VALUES (?, ?, "withdraw", NOW(), "Tilisiirto henkilölle ' +
+                          receiverName +
+                          '")',
+                        [sendingAccountId, -amount],
+                        function (err, result) {
+                          if (err) {
+                            return connection.rollback(function () {
+                              connection.release();
+                              callback(err);
+                            });
+                          }
 
-                            if (result.affectedRows === 0) {
-                              return connection.rollback(function () {
-                                connection.release();
-                                callback(new Error('Error logging sender transaction'));
-                              });
-                            }
+                          if (result.affectedRows === 0) {
+                            return connection.rollback(function () {
+                              connection.release();
+                              callback(new Error('Error logging sender transaction'));
+                            });
+                          }
 
-                            // Sixth query: Log receiver transaction
-                            connection.query(
-                              'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) ' +
-                                'VALUES (?, ?, "deposit", NOW(), "Bank Transfer from ' +
-                                senderName +
-                                '")',
-                              [receivingAccountId, amount],
-                              function (err, result) {
+                          // Sixth query: Log receiver transaction
+                          connection.query(
+                            'INSERT INTO transaction (idaccount, amount, transaction_type, transaction_date, transaction_description) ' +
+                              'VALUES (?, ?, "deposit", NOW(), "Tilisiirto henkilöltä ' +
+                              senderName +
+                              '")',
+                            [receivingAccountId, amount],
+                            function (err, result) {
+                              if (err) {
+                                return connection.rollback(function () {
+                                  connection.release();
+                                  callback(err);
+                                });
+                              }
+
+                              if (result.affectedRows === 0) {
+                                return connection.rollback(function () {
+                                  connection.release();
+                                  callback(new Error('Error logging receiver transaction'));
+                                });
+                              }
+
+                              // Commit the transaction
+                              connection.commit(function (err) {
                                 if (err) {
                                   return connection.rollback(function () {
                                     connection.release();
                                     callback(err);
                                   });
                                 }
-
-                                if (result.affectedRows === 0) {
-                                  return connection.rollback(function () {
-                                    connection.release();
-                                    callback(new Error('Error logging receiver transaction'));
-                                  });
-                                }
-
-                                // Commit the transaction
-                                connection.commit(function (err) {
-                                  if (err) {
-                                    return connection.rollback(function () {
-                                      connection.release();
-                                      callback(err);
-                                    });
-                                  }
-                                  connection.release();
-                                  callback(null, result);
-                                });
-                              }
-                            );
-                          }
-                        );
-                      }
-                    );
-                  }
-                );
-              }
-            );
-          }
-        );
+                                connection.release();
+                                callback(null, result);
+                              });
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            }
+          );
+        });
       });
     });
   },
