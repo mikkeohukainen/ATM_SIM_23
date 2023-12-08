@@ -45,7 +45,7 @@ void Withdraw::setLabels()
 
     ui->txt_right1->setText("100 EUR");
     ui->txt_right2->setText("MUU SUMMA");
-    ui->label_right3->setText("TAKAISIN");
+    ui->label_right3->setText("PÄÄVALIKKO");
 }
 
 void Withdraw::connectBtns()
@@ -244,6 +244,7 @@ void Withdraw::confirm()
     ui->label_left3->setText("");
     ui->txt_right2->setText("");
     ui->txt_right1->setText("VAHVISTA");
+    ui->label_right3->setText("TAKAISIN");
 }
 
 void Withdraw::startWithdrawal()

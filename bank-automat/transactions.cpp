@@ -1,8 +1,8 @@
 #include "transactions.h"
+#include <QDateTime>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QDateTime>
 
 #include "ui_transactions.h"
 
@@ -13,7 +13,8 @@ Transactions::Transactions(QWidget *parent)
     , startIndex(0)
 {
     ui->setupUi(this);
-    ui->mycentralwidget->setStyleSheet("QWidget#mycentralwidget{image: url(:/new/prefix1/img/GUI_noBTNS.png);}");
+    ui->mycentralwidget->setStyleSheet(
+        "QWidget#mycentralwidget{image: url(:/new/prefix1/img/GUI_noBTNS.png);}");
     setLabel();
     connectBtns();
 }
@@ -32,10 +33,10 @@ void Transactions::setVariables(const QString &newIdaccount, const QByteArray &n
 
 void Transactions::setLabel()
 {
-    ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    //ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->label_left2->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->label_left3->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    //ui->txt_right1->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->txt_right2->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->label_right3->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
@@ -45,7 +46,7 @@ void Transactions::setLabel()
 
     ui->txt_right1->setText("");
     ui->txt_right2->setText("");
-    ui->label_right3->setText("TAKAISIN");
+    ui->label_right3->setText("PÄÄVALIKKO");
 }
 
 void Transactions::connectBtns()

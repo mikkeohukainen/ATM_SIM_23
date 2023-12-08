@@ -60,31 +60,31 @@ void Transfer::updateLabels()
     switch (status) {
     case ENTER_ACCOUNT:
         ui->label_top->setText("SYÖTÄ SAAJAN TILINUMERO\nJA SIIRRETTÄVÄ SUMMA");
-        ui->label_left1->setText("Saajan tilinumero: ");
-        ui->label_left2->setText("Siirrettävä summa: ");
+        ui->label_left1->setText("SAAJAN TILINUMERO: ");
+        ui->label_left2->setText("SIIRRETTÄVÄ SUMMA: ");
         ui->txt_right1->setFocus();
         break;
     case ENTER_AMOUNT:
         ui->label_top->setText("SYÖTÄ SAAJAN TILINUMERO\nJA SIIRRETTÄVÄ SUMMA");
-        ui->label_left1->setText("Saajan tilinumero: ");
-        ui->label_left2->setText("Siirrettävä summa: ");
+        ui->label_left1->setText("SAAJAN TILINUMERO: ");
+        ui->label_left2->setText("SIIRRETTÄVÄ SUMMA: ");
         ui->txt_right1->setText(receivingAccountId);
         ui->txt_right2->setFocus();
         break;
     case WAITING_CONFIRMATION:;
         ui->label_top->setText("TARKISTA JA VAHVISTA TILISIIRTO");
-        ui->label_left1->setText("Vastaanottajan nimi: ");
+        ui->label_left1->setText("VASTAANOTTAJAN NIMI: ");
         ui->txt_right1->setText(receiverName.toUpper());
-        ui->label_left2->setText("Siirrettävä summa: ");
+        ui->label_left2->setText("SIIRRETTÄVÄ SUMMA: ");
         ui->txt_right2->setText(formattedAmount);
         ui->label_left3->setText("VAHVISTA");
         ui->label_right3->setText("PERUUTA");
         break;
     case TRANSFER_COMPLETE:
         ui->label_top->setText("TILISIIRTO TEHTY\nTAPAHTUMAT TIEDOT:");
-        ui->label_left1->setText("Vastaanottaja: ");
+        ui->label_left1->setText("VASTAANOTTAJA: ");
         ui->txt_right1->setText(receiverName.toUpper());
-        ui->label_left2->setText("Siirretty summa: ");
+        ui->label_left2->setText("SIIRRETTY SUMMA: ");
         ui->txt_right2->setText(formattedAmount);
         ui->label_left3->setText("ALOITA ALUSTA");
         ui->label_right3->setText("PÄÄVALIKKO");
