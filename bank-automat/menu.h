@@ -38,6 +38,7 @@ public:
                 const QString &newAccountType,
                 const QString &newAccountName,
                 const QString &newBalance,
+                const QString &newCreditLimit,
                 const QByteArray &newToken,
                 bool newBitcoinAccount,
                 const QString &newBitcoinBalance,
@@ -53,7 +54,7 @@ private:
     Transactions *objTransactions;
 
     QString idcard, PIN, card_type, idcustomer, fname, lname, idaccount, account_type, account_name,
-        balance, bitcoin_balance, bitcoin_account_name;
+        balance, credit_limit, bitcoin_balance, bitcoin_account_name;
 
     QByteArray token;
 
