@@ -9,6 +9,8 @@
 #include <QDebug>
 #include <QTimer>
 
+#include "billwidget.h"
+
 namespace Ui {
 class Withdraw;
 }
@@ -63,6 +65,7 @@ private:
     void takeMoney();
     void continueTakeMoney();
     std::map<int, int> calculateBills(int wAmount);
+    void animateBill(BillWidget *bill, int duration);
 
 private slots:
     void btn_left1_clicked();

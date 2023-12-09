@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1464</width>
-    <height>868</height>
+    <height>874</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -512,7 +512,7 @@ color: transparent;</string>
           <property name="font">
            <font>
             <family>Segoe UI</family>
-            <pointsize>12</pointsize>
+            <pointsize>14</pointsize>
             <italic>false</italic>
             <bold>false</bold>
            </font>
@@ -520,7 +520,7 @@ color: transparent;</string>
           <property name="styleSheet">
            <string notr="true">background-color: black;
 color: rgb(170, 255, 127);
-font: 12pt &quot;Segoe UI&quot;;</string>
+font: 14pt &quot;Segoe UI&quot;;</string>
           </property>
           <property name="text">
            <string>TextLabel</string>

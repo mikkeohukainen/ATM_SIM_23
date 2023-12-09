@@ -30,6 +30,7 @@ void Menu::setAll(const QString &newIdcard,
                   const QString &newAccountType,
                   const QString &newAccountName,
                   const QString &newBalance,
+                  const QString &newCreditLimit,
                   const QByteArray &newToken,
                   bool newBitcoinAccount,
                   const QString &newBitcoinBalance,
@@ -45,6 +46,7 @@ void Menu::setAll(const QString &newIdcard,
     account_type = newAccountType;
     account_name = newAccountName;
     balance = newBalance;
+    credit_limit = newCreditLimit;
     token = newToken;
     bitcoinAccount = newBitcoinAccount;
     bitcoin_balance = newBitcoinBalance;
@@ -53,7 +55,14 @@ void Menu::setAll(const QString &newIdcard,
 
 void Menu::setUpMenuTxt()
 {
-    ui->label_top->setText(("TILI: "+account_name+"\n\nSALDO: "+balance).toUpper());
+    QString displayText = ("TILI: "+account_name+"\n\nSALDO: "+balance+" €").toUpper();
+
+    if (account_type == "credit")
+    {
+        displayText += "\nLUOTTORAJA: " + credit_limit + " €";
+    }
+
+    ui->label_top->setText(displayText);
     ui->label_left1->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->label_left2->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->label_left3->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -148,5 +157,5 @@ void Menu::updateBalanceSlot()
     QJsonObject json_obj = json_doc.object();
     balance = json_obj["balance"].toString();
 
-    ui->label_top->setText(("TILI: "+account_name+"\n\nSALDO: "+balance).toUpper());
+    setUpMenuTxt();
 }

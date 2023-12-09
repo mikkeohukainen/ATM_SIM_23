@@ -441,6 +441,7 @@ void MainWindow::getAccountInfoSlot()
     account_type = json_obj["account_type"].toString();
     account_name = json_obj["account_name"].toString();
     balance = json_obj["balance"].toString();
+    credit_limit = QString::number(json_obj["credit_limit"].toInt());
 
     qDebug() << account_type;
     qDebug() << account_name;
@@ -507,6 +508,7 @@ void MainWindow::setUpMenu()
                     account_type,
                     account_name,
                     balance,
+                    credit_limit,
                     token,
                     bitcoinAccount,
                     bitcoin_balance,

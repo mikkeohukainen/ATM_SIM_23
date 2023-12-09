@@ -101,10 +101,6 @@ void Transactions::getTransactionsSlot()
 
     for (const auto &transaction : transactions) {
         QJsonObject obj = transaction.toObject();
-        /*QString transaction_type = obj["transaction_type"].toString() == "withdraw"
-                                       ? "[NOSTO]  "
-                                       : "[TALLETUS]  ";
-        displayText += transaction_type;*/
 
         QString transaction_desc = obj["transaction_description"].toString();
 
@@ -117,6 +113,10 @@ void Transactions::getTransactionsSlot()
         displayText += datetime + " ";
 
         displayText += obj["amount"].toString() + "€\n";
+    }
+
+    if (displayText.endsWith('\n')) {
+        displayText.chop(1);
     }
 
     ui->label_top->setText(displayText);
@@ -140,8 +140,8 @@ void Transactions::btn_left3_clicked()
 {
     startIndex = 0;
     getTransactions();
-    ui->label_left1->setText("SEURAAVA");
-    ui->label_left2->setText("EDELLINEN");
+    ui->label_left1->setText("\nSEURAAVA");
+    ui->label_left2->setText("\nEDELLINEN");
     ui->label_left3->setText("");
     connect(ui->btn_left2, &QPushButton::clicked, this, &Transactions::btn_left2_clicked);
 }

@@ -35,7 +35,7 @@ private:
     QStringList accountIDs;
     QString idaccount;
     QString account_type, account_name, balance,
-            account_owner;
+            account_owner, credit_limit;
 
     QMap<QString, QString> accountDetails;
 

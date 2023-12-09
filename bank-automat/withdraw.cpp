@@ -1,6 +1,7 @@
 #include "withdraw.h"
-#include "billwidget.h"
 #include "ui_withdraw.h"
+
+#include <QPropertyAnimation>
 
 Withdraw::Withdraw(QWidget *parent)
     : QMainWindow(parent)
@@ -345,10 +346,11 @@ void Withdraw::continueTakeMoney()
 {
     ui->label_top->setText("OTA RAHAT");
     ui->label_right3->setText("SULJE");
-
     connect(ui->btn_right3, &QPushButton::clicked, this, &Withdraw::btn_right3_clicked);
 
     billWidgetOffsets.clear();
+
+    int duration = 300;
 
     for (const auto &pair : bills) {
         int billType = pair.first;
@@ -356,8 +358,8 @@ void Withdraw::continueTakeMoney()
 
         for (int i = 0; i < billCount; ++i) {
 
-            int xOffset = billWidgetOffsets[billType] * 60;
-            int yOffset = billWidgetOffsets[billType] * 60;
+            int xOffset = billWidgetOffsets[billType] * 40;
+            int yOffset = billWidgetOffsets[billType] * 50;
 
             switch (billType) {
 
@@ -366,6 +368,7 @@ void Withdraw::continueTakeMoney()
                                                   "10euro.jpg",
                                                   QPoint(740 - xOffset, 450 + yOffset));
                 bill->show();
+                animateBill(bill, duration);
                 billWidgetOffsets[billType]++;
                 break;
                 }
@@ -374,6 +377,7 @@ void Withdraw::continueTakeMoney()
                                                   "20euro.jpg",
                                                   QPoint(780 - xOffset, 490 + yOffset));
                 bill->show();
+                animateBill(bill, duration);
                 billWidgetOffsets[billType]++;
                 break;
                 }
@@ -382,6 +386,7 @@ void Withdraw::continueTakeMoney()
                                                   "50euro.jpg",
                                                   QPoint(820 - xOffset, 530 + yOffset));
                 bill->show();
+                animateBill(bill, duration);
                 billWidgetOffsets[billType]++;
                 break;
                 }
@@ -390,6 +395,7 @@ void Withdraw::continueTakeMoney()
                                                   "100euro.jpg",
                                                   QPoint(860 - xOffset, 570 + yOffset));
                 bill->show();
+                animateBill(bill, duration);
                 billWidgetOffsets[billType]++;
                 break;
                 }
@@ -398,10 +404,20 @@ void Withdraw::continueTakeMoney()
                                                   "500euro.jpg",
                                                   QPoint(900 - xOffset, 610 + yOffset));
                 bill->show();
+                animateBill(bill, duration);
                 billWidgetOffsets[billType]++;
                 break;
                 }
             }
         }
     }
+}
+
+void Withdraw::animateBill(BillWidget *bill, int duration)
+{
+    QPropertyAnimation *animation = new QPropertyAnimation(bill, "geometry");
+    animation->setDuration(duration);
+    animation->setStartValue(QRect(bill->x(), bill->y() + 100, bill->width(), bill->height()));
+    animation->setEndValue(QRect(bill->x(), bill->y(), bill->width(), bill->height()));
+    animation->start(QPropertyAnimation::DeleteWhenStopped);
 }
