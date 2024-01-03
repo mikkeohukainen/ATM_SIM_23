@@ -2,26 +2,26 @@
 
 ## Posteri
 
-<img src="Poster_pic.png">
+<img src="images/Poster_pic.png">
 
 ## Tietokannan rakenne
 
-<img src="final_er_diagram.png">
+<img src="images/final_er_diagram.png">
 
 ## UI kuvia
 
 ### Aloituskäyttöliittymä
-<img src="login.png">
+<img src="images/login.png">
 
 ### Päävalikko
-<img src="menu.png">
+<img src="images/menu.png">
 
 ### Käteisnosto
-<img src="withdraw.png">
-<img src="money.png">
+<img src="images/withdraw.png">
+<img src="images/money.png">
 
 ### Tilitapahtumat
-<img src="transactions_3.png">
+<img src="images/transactions_3.png">
 
 ### Bitcoin
-<img src="bitcoin.png">
+<img src="images/bitcoin.png">
