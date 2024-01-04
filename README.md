@@ -2,7 +2,7 @@
 
 ## Posteri
 
-<img src="images/Poster_pic.png" width="600">
+<img src="images/Poster_pic.png" width="800">
 
 ## Tietokannan rakenne
 
