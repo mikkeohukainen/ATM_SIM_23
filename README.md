@@ -1,7 +1,6 @@
 # Pankkiautomaattisimulaattori
 
-# Ohjelmistokehityksen sovellusprojekti
-## Syksy 2023
+## Ohjelmistokehityksen sovellusprojekti, Syksy 2023
 
 ## Posteri
 
